@@ -8,8 +8,11 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { UserInputDto } from '../user/dto/user.dto';
+import { AccessTokenGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import { Token } from './decorator/auth.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -30,7 +33,9 @@ export class AuthController {
     return this.authService.logOutUser();
   }
 
-  @UseGuards()
+  @UseGuards(AccessTokenGuard)
   @Get('/at')
-  async getAccessToken() {}
+  async getAccessToken(@Token() token: any) {
+    console.log(token, 2);
+  }
 }
