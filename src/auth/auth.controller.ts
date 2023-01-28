@@ -1,4 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UserInputDto } from '../user/dto/user.dto';
 import { AuthService } from './auth.service';
 
@@ -7,10 +15,21 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/login')
-  async getCategoryParent(
+  @HttpCode(HttpStatus.CREATED)
+  async logInUser(
     @Body()
     data: UserInputDto,
   ) {
-    return this.authService.authLogin(data);
+    return this.authService.logInUser(data);
   }
+
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  async logOutUser() {
+    return this.authService.logOutUser();
+  }
+
+  @UseGuards()
+  @Get('/at')
+  async getAccessToken() {}
 }
