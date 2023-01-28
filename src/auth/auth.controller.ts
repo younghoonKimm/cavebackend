@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { UserInputDto } from '../user/dto/user.dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -8,7 +9,7 @@ export class AuthController {
   @Post('/login')
   async getCategoryParent(
     @Body()
-    data?: any,
+    data: UserInputDto,
   ) {
     return this.authService.authLogin(data);
   }
