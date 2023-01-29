@@ -23,8 +23,18 @@ export class AuthController {
   async logInUser(
     @Body()
     data: UserInputDto,
+    @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.logInUser(data);
+    const tokens = await this.authService.logInUser(data);
+    const { accessToken, refreshToken } = tokens;
+
+    response.cookie('CAV_ACC', accessToken, {
+      // domain: 'localhost',
+      path: '/',
+      // httpOnly: true,
+    });
+    response.cookie('CAV_RFS', refreshToken, { path: '/' });
+    return tokens;
   }
 
   @Post('/logout')

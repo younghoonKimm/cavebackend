@@ -26,6 +26,9 @@ import { UserEntity } from './user/entities/user.entity';
         ACCESS_TOKEN_EXPIRATION: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_EXPIRATION: Joi.string().required(),
+        OAUTH_GOOGLE_ID: Joi.string().required(),
+        OAUTH_GOOGLE_SECRET: Joi.string().required(),
+        OAUTH_GOOGLE_REDIRECT: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({

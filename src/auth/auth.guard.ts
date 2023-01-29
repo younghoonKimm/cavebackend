@@ -7,10 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import {
-  ERROR_JWT_EXPIRED,
-  ERROR_JWT_INVALID_TOKEN,
-} from 'src/common/constants/errorConstants';
+import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -38,13 +35,15 @@ export class AccessTokenGuard implements CanActivate {
   public canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 
-    const requsetToken = request.headers.authorization.replace('Bearer ', '');
+    const { CAV_ACC: accessToken } = context
+      .switchToHttp()
+      .getRequest().cookies;
 
-    if (requsetToken === undefined) {
+    if (accessToken === undefined) {
       return false;
     }
 
-    const decodedToken = this.validateToken(requsetToken);
+    const decodedToken = this.validateToken(accessToken);
 
     if (decodedToken) {
       request.user = decodedToken;

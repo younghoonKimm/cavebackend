@@ -2,7 +2,7 @@ import { Column, Entity } from 'typeorm';
 import { IsString, IsEnum, Length } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 
-enum SocialPlatforms {
+export enum SocialPlatforms {
   Google = 'google',
   Kakao = 'kakao',
   Apple = 'apple',
