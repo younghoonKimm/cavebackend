@@ -102,4 +102,6 @@ export class AuthService {
       this.userInfo.create({ ...user, hashRT: refreshToken }),
     );
   }
+
+  async googleLogin() {}
 }

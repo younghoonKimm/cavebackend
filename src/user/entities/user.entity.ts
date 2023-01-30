@@ -15,10 +15,6 @@ export class UserEntity extends CommonEntitiy {
   @IsString()
   socialPlatform: SocialPlatforms;
 
-  @Column({ length: 50 })
-  @IsString()
-  providerId: string;
-
   @Column({ length: 40, nullable: true })
   @IsString()
   email?: string;
