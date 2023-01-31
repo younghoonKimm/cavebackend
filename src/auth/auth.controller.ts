@@ -11,19 +11,13 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
+import { GoogleUser } from 'src/types/auth';
 import { SocialPlatforms } from 'src/user/entities/user.entity';
 import { UserInputDto } from '../user/dto/user.dto';
 import { AccessTokenGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { Token } from './decorator/auth.decorator';
 import { GoogleStrategy } from './GoogleStrategy';
-
-interface GoogleUser {
-  provider: string;
-  providerId: string;
-  email: string;
-  name: string;
-}
 
 @Controller('api/auth')
 export class AuthController {
@@ -34,22 +28,27 @@ export class AuthController {
 
   @Get('/google') // 1
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req, @Res() res) {}
+  async googleAuth(@Req() req, @Res() res) {
+    console.log(req);
+  }
 
-  @Get('google/callback')
+  @Get('/google/callback') // 2
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(
+  async googleAuthRedirect(
     @Req() req: Request & { user: GoogleUser },
-    @Res() res: Response,
-  ): Promise<any> {
-    // ...
+    @Res() res,
+  ) {
     const { user } = req;
-    console.log(req.user);
+    const { email, picture, firstName, lastName } = user;
 
-    const tokens = await this.authService.logInUser({
+    const newUser = {
       socialPlatform: 'google' as SocialPlatforms,
-      ...user,
-    });
+      email: email,
+      profileImg: picture,
+      name: firstName + lastName,
+    };
+
+    const tokens = await this.authService.logInUser(newUser);
     const { accessToken, refreshToken } = tokens;
 
     res.cookie('CAV_ACC', accessToken, {
@@ -59,9 +58,7 @@ export class AuthController {
     });
     res.cookie('CAV_RFS', refreshToken, { path: '/' });
 
-    res.location('back');
-    // const { user } = req;
-    // return this.authService.googleLogin(user);
+    return res.redirect('back');
   }
 
   @Post('/login')

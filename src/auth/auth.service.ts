@@ -63,15 +63,15 @@ export class AuthService {
 
   async logInUser(data: UserInputDto): Promise<AuthOutputDto> {
     try {
-      const { socialPlatform, providerId } = data;
+      const { socialPlatform, email } = data;
       let user: UserEntity;
       const isUser = await this.userInfo
         .createQueryBuilder('user_entity')
         .where(
-          'user_entity.socialPlatform = :socialPlatform AND user_entity.providerId = :providerId',
-          { socialPlatform, providerId },
+          'user_entity.socialPlatform = :socialPlatform AND user_entity.email = :email',
+          { socialPlatform, email },
         )
-        .select(['user_entity.id', 'user_entity.providerId'])
+        .select(['user_entity.id', 'user_entity.email'])
         .getOne();
 
       if (isUser) {
@@ -103,5 +103,11 @@ export class AuthService {
     );
   }
 
-  async googleLogin() {}
+  async googleLogin(req) {
+    if (req) {
+      return 'we';
+    } else {
+      return 'sdds';
+    }
+  }
 }

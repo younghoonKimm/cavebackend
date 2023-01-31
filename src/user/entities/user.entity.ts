@@ -31,7 +31,7 @@ export class UserEntity extends CommonEntitiy {
   @IsString()
   phoneNumber?: string;
 
-  @Column({ nullable: true, length: 300 })
+  @Column({ nullable: true, length: 1000 })
   @IsString()
   hashRT?: string;
 }
