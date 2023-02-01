@@ -91,7 +91,7 @@ export class AuthController {
   @Get('/getToken')
   @HttpCode(HttpStatus.OK)
   async createFreshToken(@Req() req, @Res({ passthrough: true }) res) {
-    const oldRefreshToken = req;
+    const oldRefreshToken = req?.cookies['CAV_RFS'];
 
     const tokens = await this.authService.createfreshToken(oldRefreshToken);
     const { accessToken, refreshToken } = tokens;
@@ -114,11 +114,11 @@ export class AuthController {
 
   @Get('/logout')
   @HttpCode(HttpStatus.OK)
-  async logOutUser(@Req() req, @Res() response) {
-    response.clearCookie('CAV_ACC');
-    response.clearCookie('CAV_RFS');
-    response.redirect('/');
-    return;
+  async logOutUser(@Req() req, @Res({ passthrough: true }) res) {
+    res.clearCookie('CAV_ACC');
+    res.clearCookie('CAV_RFS');
+
+    return { statusCode: 200 };
   }
 
   @UseGuards(AccessTokenGuard)

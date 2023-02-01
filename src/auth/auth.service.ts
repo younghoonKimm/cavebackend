@@ -143,37 +143,37 @@ export class AuthService {
 
   async createfreshToken(refreshToken: string) {
     let userProfile;
-    console.log(refreshToken);
-    const { data } = await this.jwtService.verify(refreshToken.toString(), {
-      secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-    });
 
-    userProfile = data;
+    try {
+      const { data } = await this.jwtService.verify(refreshToken.toString(), {
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+      });
 
-    if (userProfile) {
-      const accessToken = await this.createAccesToken(userProfile);
-      return { accessToken, refreshToken };
+      userProfile = data;
+
+      if (userProfile) {
+        const accessToken = await this.createAccesToken(userProfile);
+        return { accessToken, refreshToken };
+      }
+    } catch (error) {
+      if (error.message === ERROR_JWT_EXPIRED) {
+        const user = await this.getUserData(userProfile);
+
+        if (user) {
+          const { accessToken, refreshToken } = await this.createTokens(
+            userProfile,
+          );
+          await this.updateRefreshToken(user, refreshToken);
+
+          return { accessToken, refreshToken };
+        } else {
+          throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+        }
+      } else {
+        console.log('403');
+        throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+      }
     }
-
-    // } catch (error) {
-    //   if (error.message === ERROR_JWT_EXPIRED) {
-    //     const user = await this.getUserData(userProfile);
-
-    //     if (user) {
-    //       const { accessToken, refreshToken } = await this.createTokens(
-    //         userProfile,
-    //       );
-    //       await this.updateRefreshToken(user, refreshToken);
-    //       console.log(user);
-    //       return { accessToken, refreshToken };
-    //     } else {
-    //       throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-    //     }
-    //   } else {
-    //     console.log('403');
-    //     throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
-    //   }
-    // }
   }
 
   async AllgetUser() {

@@ -7,6 +7,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './user/entities/user.entity';
+import { EventsModule } from './events/events.module';
+import { EventsGateway } from './events.gateway';
 
 @Module({
   imports: [
@@ -43,8 +45,9 @@ import { UserEntity } from './user/entities/user.entity';
       logging: true,
     }),
     AuthModule,
+    EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EventsGateway],
 })
 export class AppModule {}
