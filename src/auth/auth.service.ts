@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
@@ -8,6 +8,8 @@ import { UserEntity } from 'src/user/entities/user.entity';
 
 import { AuthOutputDto, AuthTokenOutput } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
+import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
+import { returnTokenError } from 'src/utils/error/tokenError';
 
 @Injectable()
 export class AuthService {
@@ -61,6 +63,24 @@ export class AuthService {
     }
   }
 
+  async getUserData(user: UserInputDto) {
+    const { id, email } = user;
+    const isUser = await this.userInfo
+      .createQueryBuilder('user_entity')
+      .where('user_entity.id = :id AND user_entity.email = :email', {
+        id,
+        email,
+      })
+      .select([
+        'user_entity.name',
+        'user_entity.email',
+        'user_entity.profileImg',
+      ])
+      .getOne();
+
+    return isUser;
+  }
+
   async logInUser(data: UserInputDto): Promise<AuthOutputDto> {
     try {
       const { socialPlatform, email } = data;
@@ -109,5 +129,58 @@ export class AuthService {
     } else {
       return 'sdds';
     }
+  }
+
+  async getUser(user: UserInputDto) {
+    try {
+      const userProfile = await this.getUserData(user);
+
+      return { user: userProfile };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async createfreshToken(refreshToken: string) {
+    let userProfile;
+    console.log(refreshToken);
+    const { data } = await this.jwtService.verify(refreshToken.toString(), {
+      secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+    });
+
+    userProfile = data;
+
+    if (userProfile) {
+      const accessToken = await this.createAccesToken(userProfile);
+      return { accessToken, refreshToken };
+    }
+
+    // } catch (error) {
+    //   if (error.message === ERROR_JWT_EXPIRED) {
+    //     const user = await this.getUserData(userProfile);
+
+    //     if (user) {
+    //       const { accessToken, refreshToken } = await this.createTokens(
+    //         userProfile,
+    //       );
+    //       await this.updateRefreshToken(user, refreshToken);
+    //       console.log(user);
+    //       return { accessToken, refreshToken };
+    //     } else {
+    //       throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+    //     }
+    //   } else {
+    //     console.log('403');
+    //     throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+    //   }
+    // }
+  }
+
+  async AllgetUser() {
+    const users = await this.userInfo
+      .createQueryBuilder('user_entity')
+      .getMany();
+
+    return users;
   }
 }

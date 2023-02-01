@@ -1,13 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
+
+import { returnTokenError } from 'src/utils/error/tokenError';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -18,17 +13,13 @@ export class AccessTokenGuard implements CanActivate {
 
   public validateToken(token: string) {
     try {
-      const isToken = this.jwtServie.verify(token.toString(), {
+      const isTokenValid = this.jwtServie.verify(token.toString(), {
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       });
 
-      return isToken;
+      return isTokenValid.data;
     } catch (error) {
-      if (error.message === ERROR_JWT_EXPIRED) {
-        throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-      }
-
-      throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+      returnTokenError(error);
     }
   }
 

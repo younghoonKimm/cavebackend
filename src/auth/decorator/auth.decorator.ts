@@ -4,6 +4,6 @@ export const Token = createParamDecorator(
   (_, ctx: ExecutionContext): ParameterDecorator => {
     const request = ctx.switchToHttp().getRequest();
 
-    return request.token;
+    return request.user;
   },
 );
