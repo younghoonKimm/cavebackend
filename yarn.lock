@@ -794,14 +794,6 @@
     socket.io "4.5.3"
     tslib "2.4.1"
 
-"@nestjs/platform-ws@^9.2.1":
-  version "9.2.1"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-9.2.1.tgz#2b206e9318f80b43bead73c635664bf492fe03ee"
-  integrity sha512-jk/3xljEPbPGXU8PXiRrXcTrXU2dXXEMaUoREyCPy09VPxXVYcGfvpz4u1oYMd9+uPGrMf7DQlO0xO2WDMWp7w==
-  dependencies:
-    tslib "2.4.1"
-    ws "8.11.0"
-
 "@nestjs/schematics@^7.3.0":
   version "7.3.1"
   resolved "https://registry.yarnpkg.com/@nestjs/schematics/-/schematics-7.3.1.tgz#68b559d2e6a8a9ecf6c984f87eaa7d4e37a910be"
@@ -7578,11 +7570,6 @@ write-file-atomic@^3.0.0:
     is-typedarray "^1.0.0"
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
-
-ws@8.11.0:
-  version "8.11.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.11.0.tgz#6a0d36b8edfd9f96d8b25683db2f8d7de6e8e143"
-  integrity sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==
 
 ws@^7.4.6:
   version "7.5.9"

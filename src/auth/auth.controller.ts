@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Header,
+  Headers,
   HttpCode,
   HttpStatus,
   Post,
@@ -18,6 +20,7 @@ import { AccessTokenGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { Token } from './decorator/auth.decorator';
 import { GoogleStrategy } from './GoogleStrategy';
+import { cookieOption } from './helper';
 
 @Controller('api/auth')
 export class AuthController {
@@ -32,6 +35,7 @@ export class AuthController {
 
   @Get('/google/callback') // 2
   @UseGuards(AuthGuard('google'))
+  @Header('Cache-Control', 'none')
   async googleAuthRedirect(
     @Req() req: Request & { user: GoogleUser },
     @Res({ passthrough: true }) res,
@@ -49,44 +53,11 @@ export class AuthController {
     const tokens = await this.authService.logInUser(newUser);
     const { accessToken, refreshToken } = tokens;
 
-    res.cookie('CAV_ACC', accessToken, {
-      domain: 'localhost',
-      path: '/',
-      overwrite: true,
-      // httpOnly: true,
-    });
-    res.cookie('CAV_RFS', refreshToken, {
-      domain: 'localhost',
-      path: '/',
-      overwrite: true,
-      // httpOnly: true,
-    });
+    res.cookie('CAV_ACC', accessToken, cookieOption);
+    res.cookie('CAV_RFS', refreshToken, cookieOption);
 
     return res.redirect('/');
   }
-
-  // @Post('/login')
-  // @HttpCode(HttpStatus.CREATED)
-  // async logInUser(
-  //   @Body()
-  //   data: UserInputDto,
-  //   @Res({ passthrough: true }) response: Response,
-  // ) {
-  //   const tokens = await this.authService.logInUser(data);
-  //   const { accessToken, refreshToken } = tokens;
-
-  //   response.cookie('CAV_ACC', accessToken, {
-  //     domain: 'localhost',
-  //     path: '/',
-  //     // httpOnly: true,
-  //   });
-  //   response.cookie('CAV_RFS', refreshToken, {
-  //     domain: 'localhost',
-  //     path: '/',
-  //     // httpOnly: true,
-  //   });
-  //   return tokens;
-  // }
 
   @Get('/getToken')
   @HttpCode(HttpStatus.OK)
@@ -96,29 +67,20 @@ export class AuthController {
     const tokens = await this.authService.createfreshToken(oldRefreshToken);
     const { accessToken, refreshToken } = tokens;
 
-    res.cookie('CAV_ACC', accessToken, {
-      domain: 'localhost',
-      path: '/',
-      overwrite: true,
-      // httpOnly: true,
-    });
-    res.cookie('CAV_RFS', refreshToken, {
-      domain: 'localhost',
-      path: '/',
-      overwrite: true,
-      // httpOnly: true,
-    });
+    res.cookie('CAV_ACC', accessToken, cookieOption);
+    res.cookie('CAV_RFS', refreshToken, cookieOption);
 
     return tokens;
   }
 
   @Get('/logout')
-  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'none')
+  @HttpCode(HttpStatus.PERMANENT_REDIRECT)
   async logOutUser(@Req() req, @Res({ passthrough: true }) res) {
     res.clearCookie('CAV_ACC');
     res.clearCookie('CAV_RFS');
 
-    return { statusCode: 200 };
+    return res.redirect('/');
   }
 
   @UseGuards(AccessTokenGuard)

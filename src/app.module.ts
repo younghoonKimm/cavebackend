@@ -8,7 +8,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './user/entities/user.entity';
 import { EventsModule } from './events/events.module';
-import { EventsGateway } from './events.gateway';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
   imports: [

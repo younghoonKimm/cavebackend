@@ -113,10 +113,6 @@ export class AuthService {
     }
   }
 
-  async logOutUser() {
-    //logout
-  }
-
   async updateRefreshToken(user: UserEntity, refreshToken: string) {
     await this.userInfo.save(
       this.userInfo.create({ ...user, hashRT: refreshToken }),
@@ -141,19 +137,26 @@ export class AuthService {
     }
   }
 
-  async createfreshToken(refreshToken: string) {
+  async createfreshToken(oldRefreshToken: string) {
     let userProfile;
 
     try {
-      const { data } = await this.jwtService.verify(refreshToken.toString(), {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-      });
+      const { data } = await this.jwtService.verify(
+        oldRefreshToken.toString(),
+        {
+          secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        },
+      );
 
       userProfile = data;
 
       if (userProfile) {
-        const accessToken = await this.createAccesToken(userProfile);
-        return { accessToken, refreshToken };
+        if (userProfile.hashRT === oldRefreshToken) {
+          const accessToken = await this.createAccesToken(userProfile);
+          return { accessToken, oldRefreshToken };
+        } else {
+          throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+        }
       }
     } catch (error) {
       if (error.message === ERROR_JWT_EXPIRED) {
@@ -170,7 +173,6 @@ export class AuthService {
           throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
       } else {
-        console.log('403');
         throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
       }
     }
