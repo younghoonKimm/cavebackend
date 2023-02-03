@@ -86,6 +86,7 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @Get('/me')
   async getAccessToken(@Token() user: any) {
+    console.log(user);
     const userProfile = await this.authService.getUser(user);
     return userProfile;
   }
@@ -93,5 +94,10 @@ export class AuthController {
   @Get('/a')
   async users() {
     return await this.authService.AllgetUser();
+  }
+
+  @Get('s')
+  c() {
+    return 'this work great';
   }
 }
