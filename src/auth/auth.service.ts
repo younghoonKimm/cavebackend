@@ -6,10 +6,11 @@ import { Repository } from 'typeorm';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 
-import { AuthOutputDto, AuthTokenOutput } from './dto/auth.dto';
+import { AuthTokenOutput, UserOutput } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
-import { returnTokenError } from 'src/utils/error/tokenError';
+import { cookieOption } from './helper';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -50,6 +51,16 @@ export class AuthService {
     );
   }
 
+  setResToken(res, accessToken, refreshToken) {
+    res.cookie('CAV_ACC', accessToken, cookieOption);
+    res.cookie('CAV_RFS', refreshToken, cookieOption);
+  }
+
+  clearResToken(res) {
+    res.clearCookie('CAV_ACC');
+    res.clearCookie('CAV_RFS');
+  }
+
   async createTokens(data: UserInputDto): Promise<AuthTokenOutput> {
     try {
       const [accessToken, refreshToken] = await Promise.all([
@@ -81,7 +92,7 @@ export class AuthService {
     return isUser;
   }
 
-  async logInUser(data: UserInputDto): Promise<AuthOutputDto> {
+  async logInUser(data: UserInputDto, res: Response): Promise<void> {
     try {
       const { socialPlatform, email } = data;
       let user: UserEntity;
@@ -104,13 +115,20 @@ export class AuthService {
 
       this.updateRefreshToken(user, refreshToken);
 
-      return { accessToken, refreshToken };
+      this.setResToken(res, accessToken, refreshToken);
+
+      return res.redirect('/');
     } catch (error) {
-      console.log(error);
-      return {
-        errorText: '토큰 발급 실패',
-      };
+      this.clearResToken(res);
+      throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
     }
+  }
+
+  async logOutUser(res): Promise<void> {
+    res.clearCookie('CAV_ACC');
+    res.clearCookie('CAV_RFS');
+
+    return res.redirect('/');
   }
 
   async updateRefreshToken(user: UserEntity, refreshToken: string) {
@@ -119,15 +137,7 @@ export class AuthService {
     );
   }
 
-  async googleLogin(req) {
-    if (req) {
-      return 'we';
-    } else {
-      return 'sdds';
-    }
-  }
-
-  async getUser(user: UserInputDto) {
+  async getUser(user: UserInputDto): Promise<UserOutput> {
     try {
       const userProfile = await this.getUserData(user);
 
@@ -137,8 +147,11 @@ export class AuthService {
     }
   }
 
-  async createfreshToken(oldRefreshToken: string) {
-    let userProfile;
+  async createfreshToken(
+    oldRefreshToken: string,
+    res: Response,
+  ): Promise<AuthTokenOutput> {
+    let userProfile: UserEntity | null;
 
     try {
       const { data } = await this.jwtService.verify(
@@ -163,22 +176,30 @@ export class AuthService {
             id: userProfile.id,
             email: userProfile.email,
           });
+
+          this.setResToken(res, accessToken, oldRefreshToken);
           return { accessToken, refreshToken: oldRefreshToken };
         }
       }
     } catch (error) {
       if (error.message === ERROR_JWT_EXPIRED) {
         const user = await this.getUserData(userProfile);
+
         if (user) {
           const { accessToken, refreshToken } = await this.createTokens(
             userProfile,
           );
+
           await this.updateRefreshToken(user, refreshToken);
+
+          this.setResToken(res, accessToken, refreshToken);
+
           return { accessToken, refreshToken };
         } else {
           throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
       } else {
+        this.clearResToken(res);
         throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
       }
     }

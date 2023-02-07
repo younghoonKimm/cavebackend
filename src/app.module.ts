@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './user/entities/user.entity';
 import { EventsModule } from './events/events.module';
 import { EventsGateway } from './events/events.gateway';
+import { ConferenceModule } from './conference/conference.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { EventsGateway } from './events/events.gateway';
 
     AuthModule,
     EventsModule,
+    ConferenceModule,
   ],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
