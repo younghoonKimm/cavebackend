@@ -1,12 +1,10 @@
 import {
-  Body,
   Controller,
   Get,
   Header,
   Headers,
   HttpCode,
   HttpStatus,
-  Post,
   Req,
   Res,
   UseGuards,
@@ -65,6 +63,7 @@ export class AuthController {
     const oldRefreshToken = req?.cookies['CAV_RFS'];
 
     const tokens = await this.authService.createfreshToken(oldRefreshToken);
+
     const { accessToken, refreshToken } = tokens;
 
     res.cookie('CAV_ACC', accessToken, cookieOption);
@@ -86,7 +85,6 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @Get('/me')
   async getAccessToken(@Token() user: any) {
-    console.log(user);
     const userProfile = await this.authService.getUser(user);
     return userProfile;
   }
@@ -98,6 +96,6 @@ export class AuthController {
 
   @Get('s')
   c() {
-    return 'this work great';
+    return { text: 'abd' };
   }
 }

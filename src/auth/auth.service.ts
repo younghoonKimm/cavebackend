@@ -148,26 +148,32 @@ export class AuthService {
         },
       );
 
-      userProfile = data;
+      const userData = await this.userInfo.findOne({
+        where: {
+          id: data.id,
+          email: data.email,
+        },
+      });
+
+      userProfile = userData;
 
       if (userProfile) {
         if (userProfile.hashRT === oldRefreshToken) {
-          const accessToken = await this.createAccesToken(userProfile);
-          return { accessToken, oldRefreshToken };
-        } else {
-          throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+          const accessToken = await this.createAccesToken({
+            id: userProfile.id,
+            email: userProfile.email,
+          });
+          return { accessToken, refreshToken: oldRefreshToken };
         }
       }
     } catch (error) {
       if (error.message === ERROR_JWT_EXPIRED) {
         const user = await this.getUserData(userProfile);
-
         if (user) {
           const { accessToken, refreshToken } = await this.createTokens(
             userProfile,
           );
           await this.updateRefreshToken(user, refreshToken);
-
           return { accessToken, refreshToken };
         } else {
           throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);

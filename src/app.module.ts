@@ -44,6 +44,7 @@ import { EventsGateway } from './events/events.gateway';
       synchronize: true,
       logging: true,
     }),
+
     AuthModule,
     EventsModule,
   ],
