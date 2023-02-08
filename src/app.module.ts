@@ -10,6 +10,7 @@ import { UserEntity } from './user/entities/user.entity';
 import { EventsModule } from './events/events.module';
 import { EventsGateway } from './events/events.gateway';
 import { ConferenceModule } from './conference/conference.module';
+import { ConferenceEntity } from './conference/entities/conference.entitiy';
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import { ConferenceModule } from './conference/conference.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [UserEntity],
+      entities: [UserEntity, ConferenceEntity],
       synchronize: true,
       logging: true,
     }),

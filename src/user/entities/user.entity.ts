@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
-import { IsString, IsEnum, Length } from 'class-validator';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import { IsString, IsEnum, Length, IsNumber } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
+import { ConferenceEntity } from 'src/conference/entities/conference.entitiy';
 
 export enum SocialPlatforms {
   Google = 'google',
@@ -30,6 +31,24 @@ export class UserEntity extends CommonEntitiy {
   @Column({ nullable: true, length: 20 })
   @IsString()
   phoneNumber?: string;
+
+  @Column({ nullable: true, default: 0 })
+  @IsNumber()
+  darkMode?: 0 | 1;
+
+  @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {})
+  @JoinTable({
+    name: 'conference',
+    joinColumn: {
+      name: 'UserId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'ConfrenceId',
+      referencedColumnName: 'id',
+    },
+  })
+  conferences: ConferenceEntity[];
 
   @Column({ nullable: true, length: 1000 })
   @IsString()

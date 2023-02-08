@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 import { UserEntity } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -31,6 +32,24 @@ describe('AuthService', () => {
           (user) => new Promise((resolve, reject) => resolve(result)),
         );
       expect(await authController.getUser(user)).toBe(result);
+    });
+  });
+
+  describe('logOut user', () => {
+    it('should logout User', async () => {
+      const res = {
+        redirect: jest.fn(),
+        clearCookie: (cookieName: string) => jest.fn(),
+      };
+      jest.spyOn(authService, 'logOutUser').mockImplementation(
+        () =>
+          new Promise((resolve, reject) => {
+            resolve();
+            res.clearCookie('CAV_ACC');
+            res.clearCookie('CAV_RFS');
+          }),
+      );
+      expect(await authController.logOutUser(res)).toBe(res.redirect('/'));
     });
   });
 });

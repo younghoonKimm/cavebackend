@@ -17,7 +17,7 @@ import { AccessTokenGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { Token } from './decorator/auth.decorator';
 import { AuthTokenOutput } from './dto/auth.dto';
-import { GoogleStrategy } from './GoogleStrategy';
+import { UserInputDto } from 'src/user/dto/user.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -67,7 +67,7 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Get('/me')
-  async getUser(@Token() user: any) {
+  async getUser(@Token() user: UserInputDto) {
     return await this.authService.getUser(user);
   }
 

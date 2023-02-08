@@ -14,7 +14,7 @@ export class AuthTokenOutput {
   status?: HttpStatus;
 }
 
-class UserProfile extends PartialType(UserEntity) {}
+export class UserProfile extends PartialType(UserEntity) {}
 
 export class UserOutput {
   user: UserProfile;
