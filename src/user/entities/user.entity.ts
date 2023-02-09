@@ -1,5 +1,5 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
-import { IsString, IsEnum, Length, IsNumber } from 'class-validator';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { IsString, IsNumber } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { ConferenceEntity } from 'src/conference/entities/conference.entitiy';
 
@@ -50,7 +50,7 @@ export class UserEntity extends CommonEntitiy {
   })
   conferences: ConferenceEntity[];
 
-  @Column({ nullable: true, length: 1000 })
+  @Column({ nullable: true, length: 500 })
   @IsString()
   hashRT?: string;
 }

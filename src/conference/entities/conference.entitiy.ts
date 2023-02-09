@@ -1,7 +1,14 @@
 import { IsString } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
 export enum ConferenceStatus {
   Reserve = 'R',

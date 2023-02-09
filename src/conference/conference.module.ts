@@ -13,4 +13,6 @@ import { ConferenceEntity } from './entities/conference.entitiy';
   controllers: [ConferenceController],
   exports: [ConferenceModule],
 })
-export class ConferenceModule {}
+export class ConferenceModule {
+  constructor() {}
+}

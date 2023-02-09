@@ -83,6 +83,7 @@ export class AuthService {
         email,
       })
       .select([
+        'user_entity.id',
         'user_entity.name',
         'user_entity.email',
         'user_entity.profileImg',
@@ -92,13 +93,12 @@ export class AuthService {
     return isUser;
   }
 
-  async getAllUSer(arr) {
+  async getAllUSer(arr: string[]) {
     console.log(arr);
-    const id = '45ff23dc-de4b-4a45-9c69-964153db7119';
     const isUser = await this.userInfo
       .createQueryBuilder('user_entity')
       .where('user_entity.id IN (:...arr)', { arr })
-
+      .select(['user_entity.id', 'user_entity.name', 'user_entity.profileImg'])
       .getMany();
 
     return isUser;
