@@ -46,7 +46,6 @@ import { ConferenceEntity } from './conference/entities/conference.entitiy';
       synchronize: true,
       logging: true,
     }),
-
     AuthModule,
     EventsModule,
     ConferenceModule,

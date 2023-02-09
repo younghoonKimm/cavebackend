@@ -20,7 +20,7 @@ export class UserEntity extends CommonEntitiy {
   @IsString()
   email?: string;
 
-  @Column({ length: 40 })
+  @Column({ length: 40, nullable: true })
   @IsString()
   name: string;
 

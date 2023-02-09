@@ -92,6 +92,17 @@ export class AuthService {
     return isUser;
   }
 
+  async getAllUSer(arr) {
+    console.log(arr);
+    const id = '45ff23dc-de4b-4a45-9c69-964153db7119';
+    const isUser = await this.userInfo
+      .createQueryBuilder('user_entity')
+      .where('user_entity.id IN (:...arr)', { arr })
+
+      .getMany();
+
+    return isUser;
+  }
   async logInUser(data: UserInputDto, res: Response): Promise<void> {
     try {
       const { socialPlatform, email } = data;
