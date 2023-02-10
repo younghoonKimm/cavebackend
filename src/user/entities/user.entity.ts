@@ -37,17 +37,17 @@ export class UserEntity extends CommonEntitiy {
   darkMode?: 0 | 1;
 
   @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {})
-  @JoinTable({
-    name: 'conference',
-    joinColumn: {
-      name: 'UserId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'ConfrenceId',
-      referencedColumnName: 'id',
-    },
-  })
+  // @JoinTable({
+  //   name: 'conferences',
+  //   joinColumn: {
+  //     name: 'ConfrenceId',
+  //     referencedColumnName: 'id',
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'UserId',
+  //     referencedColumnName: 'id',
+  //   },
+  // })
   conferences: ConferenceEntity[];
 
   @Column({ nullable: true, length: 500 })

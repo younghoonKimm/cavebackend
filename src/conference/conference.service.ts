@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { UserInputDto } from 'src/user/dto/user.dto';
@@ -20,16 +20,44 @@ export class ConferenceService {
     private readonly authService: AuthService,
   ) {}
 
-  async createConference(user: UserInputDto, conference: ConferenceInput) {
-    const invitedUsers = await this.authService.getAllUSer(conference.users);
+  // async createConference(user, conference) {
+  //   // const owner = await this.authService.getUser(user);
 
-    await this.conferenceInfo.save(
-      this.conferenceInfo.create({
-        ...conference,
-        status: conference.status,
-        users: invitedUsers,
-      }),
-    );
+  //   const dummyData = {
+  //     title: '테스트용',
+  //     status: 'P',
+  //     agenda: '김기린',
+  //   };
+
+  //   const userId = [
+  //     '45ff23dc-de4b-4a45-9c69-964153db7119',
+  //     '55ff23dc-de4b-4a45-9c69-964153db7119',
+  //   ];
+  //   const owners = await this.authService.getAllUSer(userId);
+  //   console;
+  //   const newConf = await this.conferenceInfo.save(
+  //     this.conferenceInfo.create({
+  //       ...dummyData,
+  //       status: dummyData.status as ConferenceStatus,
+  //       users: owners,
+  //     }),
+  //   );
+  // }
+
+  async createConference(conference: ConferenceInput) {
+    try {
+      const invitedUsers = await this.authService.getAllUSer(conference.users);
+
+      await this.conferenceInfo.save(
+        this.conferenceInfo.create({
+          ...conference,
+          status: conference.status,
+          users: invitedUsers,
+        }),
+      );
+    } catch (error) {
+      throw new HttpException(error.errorMessage, error.status);
+    }
 
     //   await queryRunner.commitTransaction();
     // } catch (error) {
@@ -41,22 +69,23 @@ export class ConferenceService {
   }
 
   async getConference(user: UserInputDto) {
-    const { id, email } = user;
-    const userConferences = await this.userInfo
-      .createQueryBuilder('user_entity')
-      .where('user_entity.id = :id AND user_entity.email = :email', {
-        id,
-        email,
-      })
-      .select(['user_entity.conferences'])
-      .getOne();
-
-    return userConferences;
+    const { id } = user;
+    try {
+      const userConference = await this.userInfo.findOne({
+        where: { id },
+        relations: ['conferences'],
+        select: ['id', 'conferences'],
+      });
+      return userConference;
+    } catch (e) {
+      throw new HttpException('nodata', HttpStatus.NOT_FOUND);
+    }
   }
-  async deleteConferenceUser(user, conferenceId) {
+
+  async deleteConferenceUser(userId: string) {
     const newConf = await this.conferenceInfo.findOne({
       where: {
-        id: 'd1be08d6-1ef3-406f-ad88-40d55b0d1e2d',
+        id: userId,
       },
       relations: ['users'],
     });

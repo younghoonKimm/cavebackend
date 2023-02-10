@@ -3,7 +3,6 @@ import { AccessTokenGuard } from 'src/auth/auth.guard';
 import { Token } from 'src/auth/decorator/auth.decorator';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { ConferenceService } from './conference.service';
-import { ConferenceInput } from './dto/conference.dto';
 
 @Controller('api/conference')
 export class ConferenceController {
@@ -11,11 +10,8 @@ export class ConferenceController {
 
   @Post('/create')
   @UseGuards(AccessTokenGuard)
-  async createConference(
-    @Token() user: UserInputDto,
-    @Body() conferenceInfo: any,
-  ) {
-    return await this.conferenceService.createConference(user, conferenceInfo);
+  async createConference(@Body() conferenceInfo: any) {
+    return await this.conferenceService.createConference(conferenceInfo);
   }
 
   @Get('/')
@@ -26,10 +22,7 @@ export class ConferenceController {
 
   @Delete('/delete/user')
   @UseGuards(AccessTokenGuard)
-  async deleteConferenceUser(
-    @Token() user: UserInputDto,
-    @Body() conferenceId: string,
-  ) {
-    await this.conferenceService.deleteConferenceUser(user, conferenceId);
+  async deleteConferenceUser(@Body() { userId }: { userId: string }) {
+    await this.conferenceService.deleteConferenceUser(userId);
   }
 }

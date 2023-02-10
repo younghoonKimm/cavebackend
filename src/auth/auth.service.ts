@@ -94,7 +94,6 @@ export class AuthService {
   }
 
   async getAllUSer(arr: string[]) {
-    console.log(arr);
     const isUser = await this.userInfo
       .createQueryBuilder('user_entity')
       .where('user_entity.id IN (:...arr)', { arr })
