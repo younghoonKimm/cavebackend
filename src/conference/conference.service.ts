@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+
 import { AuthService } from 'src/auth/auth.service';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ConferenceInput } from './dto/conference.dto';
 import { ConferenceEntity } from './entities/conference.entity';
 
@@ -15,6 +15,8 @@ export class ConferenceService {
     @Inject('CONFERENCE_REPOSITORY')
     private conferenceInfo: Repository<ConferenceEntity>,
     private readonly authService: AuthService,
+
+    @Inject('DATASOURCE') private dataSource: DataSource,
   ) {}
 
   // async createConference(user, conference) {
@@ -42,6 +44,11 @@ export class ConferenceService {
   // }
 
   async createConference(conference: ConferenceInput) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const invitedUsers = await this.authService.getAllUSer(conference.users);
 
@@ -52,17 +59,13 @@ export class ConferenceService {
           users: invitedUsers,
         }),
       );
+      await queryRunner.commitTransaction();
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       throw new HttpException(error.errorMessage, error.status);
+    } finally {
+      await queryRunner.release();
     }
-
-    //   await queryRunner.commitTransaction();
-    // } catch (error) {
-    //   await queryRunner.rollbackTransaction();
-    //   throw new HttpException(error.errorMessage, error.status);
-    // } finally {
-    //   await queryRunner.release();
-    // }
   }
 
   async getConference(user: UserInputDto) {

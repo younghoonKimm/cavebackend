@@ -11,25 +11,33 @@ import {
 import { Server, Socket } from 'socket.io';
 import { onlineMap } from './onlineMap';
 
+function getKeyByValue(object, value) {
+  return Object.keys(object).find((key) => object[key] === value);
+}
+
 @WebSocketGateway({ namespace: /\/ws-.+/ })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor() {}
+
   @WebSocketServer() public server: Server;
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() data: string,
     @ConnectedSocket() socket: Socket,
   ): string {
-    console.log(data);
+    const receiverSocketId = getKeyByValue(onlineMap[`/ws-sub`], Number(2));
+    console.log(receiverSocketId);
     socket.emit('messaged', data);
+    // socket.to(receiverSocketId).emit('messaged', data);
 
-    return 'Hello world!';
+    return data;
   }
 
   @SubscribeMessage('login')
   handleLogin(
-    @MessageBody() data: { id: number; conference: number[] },
+    @MessageBody() data: { id: number; conferences: number[] },
     @ConnectedSocket() socket: Socket,
   ) {
     const newConference = socket.nsp;
@@ -37,8 +45,7 @@ export class EventsGateway
     onlineMap[socket.nsp.name][socket.id] = data.id;
     newConference.emit('onlineList', Object.values(onlineMap[socket.nsp.name]));
 
-    data.conference.forEach((channel) => {
-      console.log('join', socket.nsp.name, channel);
+    data.conferences.forEach((channel) => {
       socket.join(`${socket.nsp.name}-${channel}`);
     });
   }

@@ -6,6 +6,6 @@ export const conferenceProviders = [
     provide: 'CONFERENCE_REPOSITORY',
     useFactory: (dataSource: DataSource) =>
       dataSource.getRepository(ConferenceEntity),
-    inject: ['DATA_SOURCE'],
+    inject: ['DATASOURCE'],
   },
 ];
