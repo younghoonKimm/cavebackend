@@ -1,7 +1,7 @@
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { IsString, IsNumber } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
-import { ConferenceEntity } from 'src/conference/entities/conference.entitiy';
+import { ConferenceEntity } from 'src/conference/entities/conference.entity';
 
 export enum SocialPlatforms {
   Google = 'google',

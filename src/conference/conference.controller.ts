@@ -17,7 +17,7 @@ export class ConferenceController {
   @Get('/')
   @UseGuards(AccessTokenGuard)
   async getConference(@Token() user: UserInputDto) {
-    await this.conferenceService.getConference(user);
+    return await this.conferenceService.getConference(user);
   }
 
   @Delete('/delete/user')

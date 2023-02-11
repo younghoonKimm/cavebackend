@@ -1,22 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { ConferenceInput } from './dto/conference.dto';
-import {
-  ConferenceEntity,
-  ConferenceStatus,
-} from './entities/conference.entitiy';
+import { ConferenceEntity } from './entities/conference.entity';
 
 @Injectable()
 export class ConferenceService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userInfo: Repository<UserEntity>,
-    @InjectRepository(ConferenceEntity)
-    private readonly conferenceInfo: Repository<ConferenceEntity>,
+    @Inject('USER_REPOSITORY')
+    private userInfo: Repository<UserEntity>,
+    @Inject('CONFERENCE_REPOSITORY')
+    private conferenceInfo: Repository<ConferenceEntity>,
     private readonly authService: AuthService,
   ) {}
 
@@ -76,6 +73,7 @@ export class ConferenceService {
         relations: ['conferences'],
         select: ['id', 'conferences'],
       });
+
       return userConference;
     } catch (e) {
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);

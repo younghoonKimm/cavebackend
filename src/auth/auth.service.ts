@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
@@ -15,8 +15,9 @@ import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userInfo: Repository<UserEntity>,
+    @Inject('USER_REPOSITORY')
+    private userInfo: Repository<UserEntity>,
+
     private jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}

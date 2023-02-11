@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import * as Joi from 'joi';
 
 import { AppController } from './app.controller';
@@ -10,7 +11,8 @@ import { UserEntity } from './user/entities/user.entity';
 import { EventsModule } from './events/events.module';
 import { EventsGateway } from './events/events.gateway';
 import { ConferenceModule } from './conference/conference.module';
-import { ConferenceEntity } from './conference/entities/conference.entitiy';
+import { ConferenceEntity } from './conference/entities/conference.entity';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 @Module({
   imports: [
@@ -35,17 +37,21 @@ import { ConferenceEntity } from './conference/entities/conference.entitiy';
         OAUTH_GOOGLE_REDIRECT: Joi.string().required(),
       }),
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: +process.env.DB_PORT,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: [UserEntity, ConferenceEntity],
-      synchronize: true,
-      logging: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async () => ({
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        port: +process.env.DB_PORT,
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        entities: [UserEntity, ConferenceEntity],
+        synchronize: true,
+        logging: true,
+      }),
     }),
+
     AuthModule,
     EventsModule,
     ConferenceModule,

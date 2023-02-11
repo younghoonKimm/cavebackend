@@ -1,4 +1,4 @@
-import { ConferenceStatus } from '../entities/conference.entitiy';
+import { ConferenceStatus } from '../entities/conference.entity';
 
 export interface ConferenceInput {
   title: string;
