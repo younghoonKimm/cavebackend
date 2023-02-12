@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/auth.guard';
 import { Token } from 'src/auth/decorator/auth.decorator';
 import { UserInputDto } from 'src/user/dto/user.dto';
@@ -18,6 +27,15 @@ export class ConferenceController {
   @UseGuards(AccessTokenGuard)
   async getConference(@Token() user: UserInputDto) {
     return await this.conferenceService.getConference(user);
+  }
+
+  @Delete('/:id')
+  @UseGuards(AccessTokenGuard)
+  async deleteConference(
+    @Token() user: UserInputDto,
+    @Param() { id: conferenceId },
+  ) {
+    return await this.conferenceService.deleteConference(user, conferenceId);
   }
 
   @Delete('/delete/user')

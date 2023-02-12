@@ -28,7 +28,7 @@ export class EventsGateway
     @ConnectedSocket() socket: Socket,
   ): string {
     const receiverSocketId = getKeyByValue(onlineMap[`/ws-sub`], Number(2));
-    console.log(receiverSocketId);
+
     socket.emit('messaged', data);
     // socket.to(receiverSocketId).emit('messaged', data);
 

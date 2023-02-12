@@ -83,20 +83,42 @@ export class ConferenceService {
     }
   }
 
-  async deleteConferenceUser(userId: string) {
-    const newConf = await this.conferenceInfo.findOne({
-      where: {
-        id: userId,
-      },
-      relations: ['users'],
-    });
+  async deleteConference({ id: userId }: UserInputDto, conferenceId: string) {
+    try {
+      const oldConference = await this.conferenceInfo.findOne({
+        where: {
+          id: conferenceId,
+          users: {
+            id: userId,
+          },
+        },
 
-    await this.conferenceInfo.save({
-      ...newConf,
-      users: newConf.users.filter(
-        (user) => user.id !== '45ff23dc-de4b-4a45-9c69-964153db7119',
-      ),
-    });
+        relations: ['users'],
+      });
+      if (oldConference) {
+        await this.conferenceInfo.delete({ id: conferenceId });
+      }
+    } catch (error) {}
+  }
+
+  async deleteConferenceUser(userId: string) {
+    try {
+      const oldConferences = await this.conferenceInfo.findOne({
+        where: {
+          id: userId,
+        },
+        relations: ['users'],
+      });
+
+      if (oldConferences) {
+        await this.conferenceInfo.save({
+          ...oldConferences,
+          users: oldConferences.users.filter(
+            (user) => user.id !== '45ff23dc-de4b-4a45-9c69-964153db7119',
+          ),
+        });
+      }
+    } catch (error) {}
 
     // const user = await this.userInfo.findOne({
     //   where: { id: '55ff23dc-de4b-4a45-9c69-964153db7119' },
