@@ -12,7 +12,7 @@ import { EventsModule } from './events/events.module';
 import { EventsGateway } from './events/events.gateway';
 import { ConferenceModule } from './conference/conference.module';
 import { ConferenceEntity } from './conference/entities/conference.entity';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -57,6 +57,6 @@ import { DataSource, DataSourceOptions } from 'typeorm';
     ConferenceModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EventsGateway],
+  providers: [AppService, EventsGateway, JwtService],
 })
 export class AppModule {}

@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,6 +10,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SocketGuard } from 'src/auth/auth.guard.socket';
+import { Token } from 'src/auth/decorator/auth.decorator';
 import { onlineMap } from './onlineMap';
 
 function getKeyByValue(object, value) {
@@ -23,12 +26,13 @@ export class EventsGateway
 
   @WebSocketServer() public server: Server;
   @SubscribeMessage('message')
+  @UseGuards(SocketGuard)
   handleMessage(
     @MessageBody() data: string,
     @ConnectedSocket() socket: Socket,
   ): string {
-    const receiverSocketId = getKeyByValue(onlineMap[`/ws-sub`], Number(2));
-
+    // const receiverSocketId = getKeyByValue(onlineMap[`/ws-sub`], Number(2));
+    console.log('data', socket.nsp.name);
     socket.emit('messaged', data);
     // socket.to(receiverSocketId).emit('messaged', data);
 
@@ -37,12 +41,14 @@ export class EventsGateway
 
   @SubscribeMessage('login')
   handleLogin(
-    @MessageBody() data: { id: number; conferences: number[] },
+    @MessageBody() data: { id: string; conferences: string[] },
     @ConnectedSocket() socket: Socket,
   ) {
     const newConference = socket.nsp;
 
     onlineMap[socket.nsp.name][socket.id] = data.id;
+
+    console.log(socket.nsp.name, socket.id);
     newConference.emit('onlineList', Object.values(onlineMap[socket.nsp.name]));
 
     data.conferences.forEach((channel) => {
