@@ -12,6 +12,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SocketGuard } from 'src/auth/auth.guard.socket';
 import { Token } from 'src/auth/decorator/auth.decorator';
+import { SocketUser } from 'src/types/auth';
 import { onlineMap } from './onlineMap';
 
 function getKeyByValue(object, value) {
@@ -26,15 +27,21 @@ export class EventsGateway
 
   @WebSocketServer() public server: Server;
   @SubscribeMessage('message')
-  @UseGuards(SocketGuard)
+  // @UseGuards(SocketGuard)
   handleMessage(
     @MessageBody() data: string,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: SocketUser,
   ): string {
-    // const receiverSocketId = getKeyByValue(onlineMap[`/ws-sub`], Number(2));
-    console.log('data', socket.nsp.name);
-    socket.emit('messaged', data);
-    // socket.to(receiverSocketId).emit('messaged', data);
+    // console.log(socket.handshake);
+
+    // const receiverSocketId = getKeyByValue(onlineMap[socket.nsp.name], '32323');
+    // console.log('data', socket.nsp.name);
+
+    const receiverSocketId = getKeyByValue(onlineMap[socket.nsp.name], '32323');
+
+    console.log(`/ws-${socket.nsp.name}`);
+
+    socket.to(`${socket.nsp.name}`).emit('messaged', data);
 
     return data;
   }
@@ -44,15 +51,12 @@ export class EventsGateway
     @MessageBody() data: { id: string; conferences: string[] },
     @ConnectedSocket() socket: Socket,
   ) {
-    const newConference = socket.nsp;
+    // onlineMap[socket.nsp.name][socket.id] = data.id;
 
-    onlineMap[socket.nsp.name][socket.id] = data.id;
+    // newConference.emit('onlineList', Object.values(onlineMap[socket.nsp.name]));
 
-    console.log(socket.nsp.name, socket.id);
-    newConference.emit('onlineList', Object.values(onlineMap[socket.nsp.name]));
-
-    data.conferences.forEach((channel) => {
-      socket.join(`${socket.nsp.name}-${channel}`);
+    data.conferences.forEach(() => {
+      socket.join(`${socket.nsp.name}`);
     });
   }
 
@@ -71,7 +75,7 @@ export class EventsGateway
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     const newChannel = socket.nsp;
 
-    delete onlineMap[socket.nsp.name][socket.id];
+    delete onlineMap[socket.nsp.name];
 
     newChannel.emit('hello', Object.values(onlineMap[socket.nsp.name]));
   }
