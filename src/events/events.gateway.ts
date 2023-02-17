@@ -60,9 +60,7 @@ export class EventsGateway
     });
   }
 
-  afterInit(server: Server) {
-    console.log('ws init');
-  }
+  afterInit(server: Server) {}
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     if (!onlineMap[socket.nsp.name]) {
@@ -73,10 +71,10 @@ export class EventsGateway
   }
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const newChannel = socket.nsp;
+    // const newChannel = socket?.nsp;
 
     delete onlineMap[socket.nsp.name];
 
-    newChannel.emit('hello', Object.values(onlineMap[socket.nsp.name]));
+    // newChannel.emit('hello', Object.values(onlineMap[socket.nsp.name]));
   }
 }
