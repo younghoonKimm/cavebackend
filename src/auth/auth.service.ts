@@ -89,6 +89,7 @@ export class AuthService {
         'user_entity.email',
         'user_entity.profileImg',
       ])
+
       .getOne();
 
     return isUser;

@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Header,
-  Headers,
   HttpCode,
   HttpStatus,
   Req,
