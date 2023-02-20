@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { agendaProviders } from 'src/agenda/agenda.provider';
+import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { DatabaseModule } from 'src/databse/database.module';
 import { UserEntity } from 'src/user/entities/user.entity';
@@ -13,7 +15,7 @@ import { ConferenceEntity } from './entities/conference.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, ConferenceEntity]),
+    TypeOrmModule.forFeature([UserEntity, ConferenceEntity, AgendaEntity]),
     DatabaseModule,
   ],
   providers: [
@@ -22,6 +24,7 @@ import { ConferenceEntity } from './entities/conference.entity';
     AuthService,
     ...conferenceProviders,
     ...userProviders,
+    ...agendaProviders,
   ],
   controllers: [ConferenceController],
   exports: [ConferenceModule],

@@ -13,6 +13,8 @@ import { EventsGateway } from './events/events.gateway';
 import { ConferenceModule } from './conference/conference.module';
 import { ConferenceEntity } from './conference/entities/conference.entity';
 import { JwtService } from '@nestjs/jwt';
+import { AgendaModule } from './agenda/agenda.module';
+import { AgendaEntity } from './agenda/entities/agenda.entity';
 
 @Module({
   imports: [
@@ -46,7 +48,7 @@ import { JwtService } from '@nestjs/jwt';
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        entities: [UserEntity, ConferenceEntity],
+        entities: [UserEntity, ConferenceEntity, AgendaEntity],
         synchronize: true,
         logging: true,
       }),
@@ -55,6 +57,7 @@ import { JwtService } from '@nestjs/jwt';
     AuthModule,
     EventsModule,
     ConferenceModule,
+    AgendaModule,
   ],
   controllers: [AppController],
   providers: [AppService, EventsGateway, JwtService],

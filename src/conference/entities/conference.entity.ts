@@ -1,4 +1,5 @@
 import { IsString } from 'class-validator';
+import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
@@ -19,10 +20,6 @@ export class ConferenceEntity extends CommonEntitiy {
   @IsString()
   status: ConferenceStatus;
 
-  @Column({ length: 30000 })
-  @IsString()
-  agenda: string;
-
   @ManyToMany(() => UserEntity, (user) => user.conferences, { cascade: true })
   @JoinTable({
     name: 'Conference',
@@ -36,4 +33,21 @@ export class ConferenceEntity extends CommonEntitiy {
     },
   })
   users: UserEntity[];
+
+  @ManyToMany(() => AgendaEntity, (agenda) => agenda.conference, {
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable({
+    name: 'Agenda',
+    joinColumn: {
+      name: 'ConfrenceId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'AgendaId',
+      referencedColumnName: 'id',
+    },
+  })
+  agendas?: AgendaEntity[];
 }

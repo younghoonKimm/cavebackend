@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 
 import { AuthService } from 'src/auth/auth.service';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, getRepository, Repository } from 'typeorm';
 import { ConferenceInput } from './dto/conference.dto';
 import { ConferenceEntity } from './entities/conference.entity';
 
@@ -14,34 +15,13 @@ export class ConferenceService {
     private userInfo: Repository<UserEntity>,
     @Inject('CONFERENCE_REPOSITORY')
     private conferenceInfo: Repository<ConferenceEntity>,
+
+    @Inject('AGENDA_REPOSITORY')
+    private agendaInfo: Repository<AgendaEntity>,
     private readonly authService: AuthService,
 
     @Inject('DATASOURCE') private dataSource: DataSource,
   ) {}
-
-  // async createConference(user, conference) {
-  //   // const owner = await this.authService.getUser(user);
-
-  //   const dummyData = {
-  //     title: '테스트용',
-  //     status: 'P',
-  //     agenda: '김기린',
-  //   };
-
-  //   const userId = [
-  //     '45ff23dc-de4b-4a45-9c69-964153db7119',
-  //     '55ff23dc-de4b-4a45-9c69-964153db7119',
-  //   ];
-  //   const owners = await this.authService.getAllUSer(userId);
-  //   console;
-  //   const newConf = await this.conferenceInfo.save(
-  //     this.conferenceInfo.create({
-  //       ...dummyData,
-  //       status: dummyData.status as ConferenceStatus,
-  //       users: owners,
-  //     }),
-  //   );
-  // }
 
   async createConference(conference: ConferenceInput) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -51,14 +31,15 @@ export class ConferenceService {
 
     try {
       const invitedUsers = await this.authService.getAllUSer(conference.users);
-
-      await this.conferenceInfo.save(
-        this.conferenceInfo.create({
-          ...conference,
-          status: conference.status,
-          users: invitedUsers,
-        }),
-      );
+      if (invitedUsers) {
+        await this.conferenceInfo.save(
+          this.conferenceInfo.create({
+            ...conference,
+            status: conference.status,
+            users: invitedUsers,
+          }),
+        );
+      }
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -71,11 +52,14 @@ export class ConferenceService {
   async getConference(user: UserInputDto) {
     const { id } = user;
     try {
-      const userConference = await this.userInfo.findOne({
-        where: { id },
-        relations: ['conferences'],
-        select: ['id', 'conferences'],
-      });
+      const userConference = await this.userInfo
+        .createQueryBuilder('user_entity')
+        .where('user_entity.id = :id', {
+          id,
+        })
+        .leftJoinAndSelect('user_entity.conferences', 'conferences')
+        .leftJoinAndSelect('conferences.agendas', 'agendas.id')
+        .getOne();
 
       return userConference;
     } catch (e) {
