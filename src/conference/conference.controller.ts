@@ -3,9 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/auth.guard';
@@ -19,14 +20,22 @@ export class ConferenceController {
 
   @Post('/create')
   @UseGuards(AccessTokenGuard)
-  async createConference(@Body() conferenceInfo: any) {
+  async createConference(@Body() conferenceInfo: any): Promise<void> {
     return await this.conferenceService.createConference(conferenceInfo);
   }
 
   @Get('/')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async getConference(@Token() user: UserInputDto) {
-    return await this.conferenceService.getConference(user);
+  async getConferences(@Token() user: UserInputDto) {
+    return await this.conferenceService.getConferences(user);
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AccessTokenGuard)
+  async getConference(@Param() { id: conferenceId }) {
+    return await this.conferenceService.getConference(conferenceId);
   }
 
   @Delete('/:id')
@@ -41,6 +50,6 @@ export class ConferenceController {
   @Delete('/delete/user')
   @UseGuards(AccessTokenGuard)
   async deleteConferenceUser(@Body() { userId }: { userId: string }) {
-    await this.conferenceService.deleteConferenceUser(userId);
+    return await this.conferenceService.deleteConferenceUser(userId);
   }
 }

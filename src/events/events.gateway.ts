@@ -1,4 +1,6 @@
 import { UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
@@ -10,20 +12,18 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { SocketGuard } from 'src/auth/auth.guard.socket';
-import { Token } from 'src/auth/decorator/auth.decorator';
+
 import { SocketUser } from 'src/types/auth';
 import { onlineMap } from './onlineMap';
-
-function getKeyByValue(object, value) {
-  return Object.keys(object).find((key) => object[key] === value);
-}
 
 @WebSocketGateway({ namespace: /\/ws-.+/ })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor() {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @WebSocketServer() public server: Server;
   @SubscribeMessage('message')
@@ -32,15 +32,6 @@ export class EventsGateway
     @MessageBody() data: string,
     @ConnectedSocket() socket: SocketUser,
   ): string {
-    // console.log(socket.handshake);
-
-    // const receiverSocketId = getKeyByValue(onlineMap[socket.nsp.name], '32323');
-    // console.log('data', socket.nsp.name);
-
-    const receiverSocketId = getKeyByValue(onlineMap[socket.nsp.name], '32323');
-
-    console.log(`/ws-${socket.nsp.name}`);
-
     socket.to(`${socket.nsp.name}`).emit('messaged', data);
 
     return data;
@@ -48,33 +39,49 @@ export class EventsGateway
 
   @SubscribeMessage('login')
   handleLogin(
-    @MessageBody() data: { id: string; conferences: string[] },
+    @MessageBody() data: { id: string; conference: string[] },
     @ConnectedSocket() socket: Socket,
   ) {
-    // onlineMap[socket.nsp.name][socket.id] = data.id;
+    onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
 
-    // newConference.emit('onlineList', Object.values(onlineMap[socket.nsp.name]));
+    socket.join(`${socket.nsp.name}`);
 
-    data.conferences.forEach(() => {
-      socket.join(`${socket.nsp.name}`);
-    });
+    socket.to(`${socket.nsp.name}`).emit('offer', onlineMap[socket.nsp.name]);
   }
 
-  afterInit(server: Server) {}
+  afterInit(server: Server) {
+    // console.log(server);
+  }
 
-  handleConnection(@ConnectedSocket() socket: Socket) {
+  async handleConnection(@ConnectedSocket() socket: Socket) {
     if (!onlineMap[socket.nsp.name]) {
-      onlineMap[socket.nsp.name] = {};
+      onlineMap[socket.nsp.name] = [];
     }
 
-    socket.emit('hello', socket.nsp.name);
+    // const isTokenValid = this.jwtService.verify(token.toString(), {
+    //   secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+    // });
+
+    onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
+
+    socket.join(`${socket.nsp.name}`);
+
+    socket.emit('offer', onlineMap[socket.nsp.name]);
+
+    // socket.to(`${socket.nsp.name}`).emit('offer', onlineMap[socket.nsp.name]);
   }
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
-    // const newChannel = socket?.nsp;
+    let onlines = onlineMap[socket.nsp.name]?.filter(
+      (online: string | null) => online !== socket.id,
+    );
 
-    delete onlineMap[socket.nsp.name];
+    if (onlines.length <= 0) {
+      delete onlineMap[socket.nsp.name];
+    } else {
+      onlineMap[socket.nsp.name] = onlines;
+    }
 
-    // newChannel.emit('hello', Object.values(onlineMap[socket.nsp.name]));
+    // socket.to(`${socket.nsp.name}`).emit('messaged', onlineMap[socket.nsp.name]);
   }
 }

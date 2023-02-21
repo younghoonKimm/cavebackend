@@ -23,7 +23,7 @@ export class ConferenceService {
     @Inject('DATASOURCE') private dataSource: DataSource,
   ) {}
 
-  async createConference(conference: ConferenceInput) {
+  async createConference(conference: ConferenceInput): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -49,7 +49,7 @@ export class ConferenceService {
     }
   }
 
-  async getConference(user: UserInputDto) {
+  async getConferences(user: UserInputDto) {
     const { id } = user;
     try {
       const userConference = await this.userInfo
@@ -62,6 +62,27 @@ export class ConferenceService {
         .getOne();
 
       return userConference;
+    } catch (e) {
+      throw new HttpException('nodata', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getConference(id: string) {
+    try {
+      const conference = await this.conferenceInfo
+        .createQueryBuilder('conference_entity')
+        .where('conference_entity.id = :id', {
+          id,
+        })
+        .leftJoinAndSelect('conference_entity.agendas', 'agendas')
+        .select([
+          'conference_entity.id',
+          'conference_entity.title',
+          'conference_entity.status',
+        ])
+        .getOne();
+      console.log(conference);
+      return conference;
     } catch (e) {
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
     }
