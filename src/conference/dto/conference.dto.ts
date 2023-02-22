@@ -1,5 +1,8 @@
 import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
-import { ConferenceStatus } from '../entities/conference.entity';
+import {
+  ConferenceEntity,
+  ConferenceStatus,
+} from '../entities/conference.entity';
 
 export interface ConferenceInput {
   title: string;
@@ -7,3 +10,5 @@ export interface ConferenceInput {
   agendas: AgendaEntity[];
   users: string[];
 }
+
+export type ConferencesOutput = ConferenceEntity[];

@@ -6,13 +6,18 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/auth.guard';
 import { Token } from 'src/auth/decorator/auth.decorator';
 import { UserInputDto } from 'src/user/dto/user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
 import { ConferenceService } from './conference.service';
+
+import { ConferenceEntity } from './entities/conference.entity';
 
 @Controller('api/conference')
 export class ConferenceController {
@@ -27,29 +32,51 @@ export class ConferenceController {
   @Get('/')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async getConferences(@Token() user: UserInputDto) {
+  async getConferences(@Token() user: UserInputDto): Promise<UserEntity> {
     return await this.conferenceService.getConferences(user);
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async getConference(@Param() { id: conferenceId }) {
-    return await this.conferenceService.getConference(conferenceId);
+  async getConference(
+    @Token() user: UserInputDto,
+    @Param() { id: conferenceId },
+  ): Promise<ConferenceEntity> {
+    return await this.conferenceService.getConference(user, conferenceId);
+  }
+
+  @Patch('/:id')
+  @HttpCode(HttpStatus.OK)
+  // @UseGuards(AccessTokenGuard)
+  async patchConference(
+    // @Token() user: UserInputDto,
+    @Req() req,
+    @Param() { id: conferenceId },
+    @Body() data: any,
+  ): Promise<void> {
+    console.log(req);
+    return await this.conferenceService.patchConference(
+      { id: 'dsd' },
+      conferenceId,
+    );
   }
 
   @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
   async deleteConference(
     @Token() user: UserInputDto,
     @Param() { id: conferenceId },
-  ) {
+  ): Promise<void> {
     return await this.conferenceService.deleteConference(user, conferenceId);
   }
 
   @Delete('/delete/user')
   @UseGuards(AccessTokenGuard)
-  async deleteConferenceUser(@Body() { userId }: { userId: string }) {
+  async deleteConferenceUser(
+    @Body() { userId }: { userId: string },
+  ): Promise<void> {
     return await this.conferenceService.deleteConferenceUser(userId);
   }
 }

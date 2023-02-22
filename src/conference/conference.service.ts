@@ -4,7 +4,7 @@ import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { DataSource, getRepository, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ConferenceInput } from './dto/conference.dto';
 import { ConferenceEntity } from './entities/conference.entity';
 
@@ -15,13 +15,24 @@ export class ConferenceService {
     private userInfo: Repository<UserEntity>,
     @Inject('CONFERENCE_REPOSITORY')
     private conferenceInfo: Repository<ConferenceEntity>,
-
     @Inject('AGENDA_REPOSITORY')
     private agendaInfo: Repository<AgendaEntity>,
-    private readonly authService: AuthService,
 
+    private readonly authService: AuthService,
     @Inject('DATASOURCE') private dataSource: DataSource,
   ) {}
+
+  async checkJoinedUser() {
+    // const oldConference = await this.conferenceInfo
+    // .createQueryBuilder('conference_entity')
+    // .leftJoinAndSelect('conference_entity.users', 'users')
+    // .leftJoinAndSelect('conference_entity.agendas', 'agendas')
+    // .where('conference_entity.id = :cid AND users.id = :id', {
+    //   cid,
+    //   id,
+    // })
+    // .getOne();
+  }
 
   async createConference(conference: ConferenceInput): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -37,6 +48,7 @@ export class ConferenceService {
             ...conference,
             status: conference.status,
             users: invitedUsers,
+            agendas: [{ title: 'title', text: 'text' }],
           }),
         );
       }
@@ -49,8 +61,7 @@ export class ConferenceService {
     }
   }
 
-  async getConferences(user: UserInputDto) {
-    const { id } = user;
+  async getConferences({ id }: UserInputDto): Promise<UserEntity> {
     try {
       const userConference = await this.userInfo
         .createQueryBuilder('user_entity')
@@ -58,7 +69,7 @@ export class ConferenceService {
           id,
         })
         .leftJoinAndSelect('user_entity.conferences', 'conferences')
-        .leftJoinAndSelect('conferences.agendas', 'agendas.id')
+        // .leftJoinAndSelect('conferences.agendas', 'agendas.id')
         .getOne();
 
       return userConference;
@@ -67,28 +78,72 @@ export class ConferenceService {
     }
   }
 
-  async getConference(id: string) {
+  async getConference(
+    { id }: UserInputDto,
+    conferenceId: string,
+  ): Promise<ConferenceEntity> {
     try {
       const conference = await this.conferenceInfo
         .createQueryBuilder('conference_entity')
-        .where('conference_entity.id = :id', {
+        .leftJoinAndSelect('conference_entity.users', 'users')
+        .where('conference_entity.id = :conferenceId AND users.id = :id', {
+          conferenceId,
           id,
         })
-        .leftJoinAndSelect('conference_entity.agendas', 'agendas')
         .select([
           'conference_entity.id',
           'conference_entity.title',
           'conference_entity.status',
         ])
+        .leftJoinAndSelect('conference_entity.agendas', 'agendas')
         .getOne();
-      console.log(conference);
+
       return conference;
     } catch (e) {
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
     }
   }
 
-  async deleteConference({ id: userId }: UserInputDto, conferenceId: string) {
+  async patchConference(
+    user: UserInputDto,
+    conferenceId: string,
+  ): Promise<void> {
+    // const { id } = user;
+    const id = 'e9a1cf0b-952c-4b69-a58c-b8a9edd2fb57';
+    const cid = '53dbdbdf-04e1-44ac-91d5-721b2c90fdc3';
+    try {
+      const oldConference = await this.conferenceInfo
+        .createQueryBuilder('conference_entity')
+        .leftJoinAndSelect('conference_entity.users', 'users')
+        .leftJoinAndSelect('conference_entity.agendas', 'agendas')
+        .where('conference_entity.id = :cid AND users.id = :id', {
+          cid,
+          id,
+        })
+        .getOne();
+
+      if (oldConference) {
+        this.conferenceInfo.save({ ...oldConference, title: '수정완료' });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    // const conference = await this.conferenceInfo
+    //   .createQueryBuilder('conference_entity')
+    //   .leftJoinAndSelect('conference_entity.agendas', 'agendas')
+    //   .where('conference_entity.id = :cid', {
+    //     cid,
+    //   })
+
+    //   .getOne();
+
+    // 53dbdbdf-04e1-44ac-91d5-721b2c90fdc3
+  }
+
+  async deleteConference(
+    { id: userId }: UserInputDto,
+    conferenceId: string,
+  ): Promise<void> {
     try {
       const oldConference = await this.conferenceInfo.findOne({
         where: {
@@ -106,7 +161,7 @@ export class ConferenceService {
     } catch (error) {}
   }
 
-  async deleteConferenceUser(userId: string) {
+  async deleteConferenceUser(userId: string): Promise<void> {
     try {
       const oldConferences = await this.conferenceInfo.findOne({
         where: {
@@ -118,16 +173,9 @@ export class ConferenceService {
       if (oldConferences) {
         await this.conferenceInfo.save({
           ...oldConferences,
-          users: oldConferences.users.filter(
-            (user) => user.id !== '45ff23dc-de4b-4a45-9c69-964153db7119',
-          ),
+          users: oldConferences.users.filter((user) => user.id !== userId),
         });
       }
     } catch (error) {}
-
-    // const user = await this.userInfo.findOne({
-    //   where: { id: '55ff23dc-de4b-4a45-9c69-964153db7119' },
-    //   relations: ['conferences'],
-    // });
   }
 }
