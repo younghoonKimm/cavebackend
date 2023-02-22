@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { IsString } from 'class-validator';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';
@@ -13,7 +13,7 @@ export class AgendaEntity extends CommonEntitiy {
   @IsString()
   text: string;
 
-  @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {})
+  @OneToMany(() => ConferenceEntity, (conference) => conference.users, {})
   // @JoinTable({
   //   name: 'conferences',
   //   joinColumn: {

@@ -20,19 +20,19 @@ import { onlineMap } from './onlineMap';
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(
-    private jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
-
   @WebSocketServer() public server: Server;
+
   @SubscribeMessage('message')
   // @UseGuards(SocketGuard)
   handleMessage(
     @MessageBody() data: string,
     @ConnectedSocket() socket: SocketUser,
   ): string {
+    console.log(data);
+
     socket.to(`${socket.nsp.name}`).emit('messaged', data);
+
+    socket.emit('messaged', data);
 
     return data;
   }
@@ -61,6 +61,8 @@ export class EventsGateway
     // const isTokenValid = this.jwtService.verify(token.toString(), {
     //   secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
     // });
+
+    console.log('joined');
 
     onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
 
