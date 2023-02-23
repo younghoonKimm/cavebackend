@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -15,6 +15,7 @@ import { ConferenceEntity } from './conference/entities/conference.entity';
 import { JwtService } from '@nestjs/jwt';
 import { AgendaModule } from './agenda/agenda.module';
 import { AgendaEntity } from './agenda/entities/agenda.entity';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 
 @Module({
   imports: [
@@ -53,7 +54,6 @@ import { AgendaEntity } from './agenda/entities/agenda.entity';
         logging: true,
       }),
     }),
-
     AuthModule,
     EventsModule,
     ConferenceModule,
@@ -62,4 +62,8 @@ import { AgendaEntity } from './agenda/entities/agenda.entity';
   controllers: [AppController],
   providers: [AppService, EventsGateway, JwtService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventsGateway } from 'src/events/events.gateway';
-import { UserInputDto } from 'src/user/dto/user.dto';
+
 import { UserEntity } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { AgendaEntity } from './entities/agenda.entity';

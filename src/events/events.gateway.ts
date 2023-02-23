@@ -1,6 +1,3 @@
-import { UseGuards } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
@@ -16,7 +13,7 @@ import { Server, Socket } from 'socket.io';
 import { SocketUser } from 'src/types/auth';
 import { onlineMap } from './onlineMap';
 
-@WebSocketGateway({ namespace: /\/ws-.+/ })
+@WebSocketGateway({ namespace: /\/ws-.+/, transports: ['websocket'] })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -28,11 +25,7 @@ export class EventsGateway
     @MessageBody() data: string,
     @ConnectedSocket() socket: SocketUser,
   ): string {
-    console.log(data);
-
     socket.to(`${socket.nsp.name}`).emit('messaged', data);
-
-    socket.emit('messaged', data);
 
     return data;
   }
@@ -42,9 +35,12 @@ export class EventsGateway
     @MessageBody() data: { id: string; conference: string[] },
     @ConnectedSocket() socket: Socket,
   ) {
-    onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
+    // console.log(socket.nsp);
+    // onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
 
-    socket.join(`${socket.nsp.name}`);
+    // socket.join(`${socket.nsp.name}`);
+
+    socket.emit('offer', onlineMap[socket.nsp.name]);
 
     socket.to(`${socket.nsp.name}`).emit('offer', onlineMap[socket.nsp.name]);
   }
@@ -53,23 +49,16 @@ export class EventsGateway
     // console.log(server);
   }
 
-  async handleConnection(@ConnectedSocket() socket: Socket) {
+  handleConnection(@ConnectedSocket() socket: Socket) {
     if (!onlineMap[socket.nsp.name]) {
       onlineMap[socket.nsp.name] = [];
     }
 
-    // const isTokenValid = this.jwtService.verify(token.toString(), {
-    //   secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-    // });
-
-    console.log('joined');
-
     onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
 
     socket.join(`${socket.nsp.name}`);
-
+    console.log(socket.id);
     socket.emit('offer', onlineMap[socket.nsp.name]);
-
     // socket.to(`${socket.nsp.name}`).emit('offer', onlineMap[socket.nsp.name]);
   }
 

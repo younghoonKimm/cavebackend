@@ -5,7 +5,6 @@ import { UserEntity } from 'src/user/entities/user.entity';
 import { EventsGateway } from './events.gateway';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
-  providers: [EventsGateway, JwtService],
+  providers: [EventsGateway],
 })
 export class EventsModule {}
