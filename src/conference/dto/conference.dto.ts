@@ -7,7 +7,7 @@ import {
 export interface ConferenceInput {
   title: string;
   status: ConferenceStatus;
-  agendas: AgendaEntity[];
+  agendas: Partial<AgendaEntity>[];
   users: string[];
 }
 

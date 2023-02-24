@@ -39,16 +39,22 @@ export class ConferenceService {
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    const { users, agendas = [{ title: '22', text: '33' }] } = conference;
+    const { users, agendas = [] } = conference;
     try {
       const invitedUsers = await this.authService.getAllUSer(users);
+
+      const savedAgendas = await Promise.all(
+        agendas.map(async (agenda) =>
+          this.agendaInfo.save(this.agendaInfo.create({ ...agenda })),
+        ),
+      );
 
       if (invitedUsers) {
         await this.conferenceInfo.save(
           this.conferenceInfo.create({
             ...conference,
             users: invitedUsers,
-            agendas: agendas,
+            agendas: savedAgendas,
           }),
         );
       }
@@ -72,8 +78,6 @@ export class ConferenceService {
         .where('user_entity.id = :id', {
           id,
         })
-
-        // .leftJoinAndSelect('conferences.agendas', 'agendas.id')
         .getOne();
 
       return userConference;

@@ -77,22 +77,26 @@ export class AuthService {
 
   async getUserData(user: UserInputDto) {
     const { id, email } = user;
-    const isUser = await this.userInfo
-      .createQueryBuilder('user_entity')
-      .where('user_entity.id = :id AND user_entity.email = :email', {
-        id,
-        email,
-      })
-      .select([
-        'user_entity.id',
-        'user_entity.name',
-        'user_entity.email',
-        'user_entity.profileImg',
-      ])
+    try {
+      const isUser = await this.userInfo
+        .createQueryBuilder('user_entity')
+        .where('user_entity.id = :id AND user_entity.email = :email', {
+          id,
+          email,
+        })
+        .select([
+          'user_entity.id',
+          'user_entity.name',
+          'user_entity.email',
+          'user_entity.profileImg',
+        ])
 
-      .getOne();
+        .getOne();
 
-    return isUser;
+      return isUser;
+    } catch (e) {
+      throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
+    }
   }
 
   async getAllUSer(arr: string[]) {
@@ -155,7 +159,7 @@ export class AuthService {
 
       return { user: userProfile };
     } catch (error) {
-      console.log(error);
+      throw new HttpException('BAD_REQUEST', HttpStatus.FORBIDDEN);
     }
   }
 

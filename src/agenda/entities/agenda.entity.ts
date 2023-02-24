@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -22,6 +23,10 @@ export class AgendaEntity extends CommonEntitiy {
 
   @ManyToOne(() => ConferenceEntity, (conference) => conference.agendas, {
     onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'conferenceId',
+    referencedColumnName: 'id',
   })
   conference: ConferenceEntity;
 }

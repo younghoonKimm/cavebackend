@@ -16,6 +16,6 @@ export class AuthTokenOutput {
 
 export class UserProfile extends PartialType(UserEntity) {}
 
-export class UserOutput {
+export class UserOutput extends CommonOutput {
   user: UserProfile;
 }

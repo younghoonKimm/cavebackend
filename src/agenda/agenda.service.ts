@@ -25,19 +25,19 @@ export class AgendaService {
       const agenda = await this.agendaInfo
         .createQueryBuilder('agenda_entity')
         .leftJoinAndSelect('agenda_entity.conference', 'conference')
-        .leftJoinAndSelect('conference.users', 'users')
+        // .leftJoinAndSelect('conference.users', 'users')
         .where('agenda_entity.id = :agendaId', {
           agendaId,
         })
         .getOne();
-
-      console.log(agenda);
 
       if (agenda) {
         await this.agendaInfo.save({
           ...agenda,
           title: '꿀잼쓰!',
         });
+
+        console.log(agenda);
 
         const conference = await this.conferenceInfo.findOne({
           where: { id: agenda.conference.id },

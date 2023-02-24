@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { Entity } from 'typeorm';
 
-@Entity()
 export class CommonOutput {
+  error?: Error;
   errorText?: string;
 }
