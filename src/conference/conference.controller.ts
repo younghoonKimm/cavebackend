@@ -16,6 +16,7 @@ import { Token } from 'src/auth/decorator/auth.decorator';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { ConferenceService } from './conference.service';
+import { ConferenceInput } from './dto/conference.dto';
 
 import { ConferenceEntity } from './entities/conference.entity';
 
@@ -24,8 +25,11 @@ export class ConferenceController {
   constructor(private conferenceService: ConferenceService) {}
 
   @Post('/create')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async createConference(@Body() conferenceInfo: any): Promise<void> {
+  async createConference(
+    @Body() conferenceInfo: ConferenceInput,
+  ): Promise<void> {
     return await this.conferenceService.createConference(conferenceInfo);
   }
 
@@ -48,14 +52,12 @@ export class ConferenceController {
 
   @Patch('/:id')
   @HttpCode(HttpStatus.OK)
-  // @UseGuards(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard)
   async patchConference(
-    // @Token() user: UserInputDto,
-    @Req() req,
+    @Token() user: UserInputDto,
     @Param() { id: conferenceId },
     @Body() data: any,
   ): Promise<void> {
-    console.log(req);
     return await this.conferenceService.patchConference(
       { id: 'dsd' },
       conferenceId,

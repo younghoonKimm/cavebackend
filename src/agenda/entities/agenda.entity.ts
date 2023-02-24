@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { IsString } from 'class-validator';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';
@@ -13,17 +20,8 @@ export class AgendaEntity extends CommonEntitiy {
   @IsString()
   text: string;
 
-  @OneToMany(() => ConferenceEntity, (conference) => conference.agendas, {})
-  // @JoinTable({
-  //   name: 'conferences',
-  //   joinColumn: {
-  //     name: 'ConfrenceId',
-  //     referencedColumnName: 'id',
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'UserId',
-  //     referencedColumnName: 'id',
-  //   },
-  // })
+  @ManyToOne(() => ConferenceEntity, (conference) => conference.agendas, {
+    onDelete: 'CASCADE',
+  })
   conference: ConferenceEntity;
 }

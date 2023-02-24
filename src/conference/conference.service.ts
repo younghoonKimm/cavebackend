@@ -39,19 +39,20 @@ export class ConferenceService {
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+    const { users, agendas = [{ title: '22', text: '33' }] } = conference;
     try {
-      const invitedUsers = await this.authService.getAllUSer(conference.users);
+      const invitedUsers = await this.authService.getAllUSer(users);
+
       if (invitedUsers) {
         await this.conferenceInfo.save(
           this.conferenceInfo.create({
             ...conference,
-            status: conference.status,
             users: invitedUsers,
-            agendas: [{ title: 'title', text: 'text' }],
+            agendas: agendas,
           }),
         );
       }
+
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -65,15 +66,19 @@ export class ConferenceService {
     try {
       const userConference = await this.userInfo
         .createQueryBuilder('user_entity')
+        .leftJoinAndSelect('user_entity.conferences', 'conferences')
+        .leftJoin('conferences.users', 'users')
+        .addSelect(['users.name', 'users.profileImg'])
         .where('user_entity.id = :id', {
           id,
         })
-        .leftJoinAndSelect('user_entity.conferences', 'conferences')
+
         // .leftJoinAndSelect('conferences.agendas', 'agendas.id')
         .getOne();
 
       return userConference;
     } catch (e) {
+      console.log(e);
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
     }
   }
@@ -100,6 +105,7 @@ export class ConferenceService {
 
       return conference;
     } catch (e) {
+      console.log(e);
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
     }
   }
@@ -128,16 +134,6 @@ export class ConferenceService {
     } catch (error) {
       console.log(error);
     }
-    // const conference = await this.conferenceInfo
-    //   .createQueryBuilder('conference_entity')
-    //   .leftJoinAndSelect('conference_entity.agendas', 'agendas')
-    //   .where('conference_entity.id = :cid', {
-    //     cid,
-    //   })
-
-    //   .getOne();
-
-    // 53dbdbdf-04e1-44ac-91d5-721b2c90fdc3
   }
 
   async deleteConference(
@@ -152,11 +148,13 @@ export class ConferenceService {
             id: userId,
           },
         },
-
         relations: ['users'],
       });
+
       if (oldConference) {
-        await this.conferenceInfo.delete({ id: conferenceId });
+        const res = await this.conferenceInfo.delete({ id: conferenceId });
+
+        console.log(res);
       }
     } catch (error) {}
   }

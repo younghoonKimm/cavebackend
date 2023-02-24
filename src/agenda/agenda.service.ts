@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConferenceEntity } from 'src/conference/entities/conference.entity';
 import { EventsGateway } from 'src/events/events.gateway';
 
 import { UserEntity } from 'src/user/entities/user.entity';
@@ -12,6 +13,8 @@ export class AgendaService {
     private userInfo: Repository<UserEntity>,
     @Inject('AGENDA_REPOSITORY')
     private agendaInfo: Repository<AgendaEntity>,
+    @Inject('CONFERENCE_REPOSITORY')
+    private conferenceInfo: Repository<ConferenceEntity>,
 
     @Inject('DATASOURCE') private dataSource: DataSource,
     private readonly eventsGateway: EventsGateway,
@@ -21,19 +24,32 @@ export class AgendaService {
     try {
       const agenda = await this.agendaInfo
         .createQueryBuilder('agenda_entity')
+        .leftJoinAndSelect('agenda_entity.conference', 'conference')
+        .leftJoinAndSelect('conference.users', 'users')
         .where('agenda_entity.id = :agendaId', {
           agendaId,
         })
         .getOne();
 
-      await this.agendaInfo.save({
-        ...agenda,
-        title: '수정해버렸쥬',
-      });
+      console.log(agenda);
 
-      this.eventsGateway.server
-        .to(`/ws-be2d1cd2-9c36-4236-8de5-93fd4e3df3bb`)
-        .emit('messaged', '왜안됨?');
+      if (agenda) {
+        await this.agendaInfo.save({
+          ...agenda,
+          title: '꿀잼쓰!',
+        });
+
+        const conference = await this.conferenceInfo.findOne({
+          where: { id: agenda.conference.id },
+          relations: ['agendas'],
+          select: ['id', 'agendas'],
+        });
+
+        console.log(conference);
+        this.eventsGateway.server
+          .to(`/ws-${conference.id}`)
+          .emit('messaged', conference.agendas);
+      }
     } catch (error) {
       console.log(error);
     }

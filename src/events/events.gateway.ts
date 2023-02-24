@@ -13,15 +13,11 @@ import { Server, Socket } from 'socket.io';
 import { SocketUser } from 'src/types/auth';
 import { onlineMap } from './onlineMap';
 
-var a = 0;
 @WebSocketGateway({ namespace: /\/ws-.+/ })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor() {
-    a += 1;
-    console.log(a);
-  }
+  constructor() {}
   @WebSocketServer() public server: Server;
 
   @SubscribeMessage('message')
@@ -42,16 +38,12 @@ export class EventsGateway
   ) {
     socket.join(`${socket.nsp.name}`);
 
-    // console.log(this.server);
-
     this.server
       .to(`${socket.nsp.name}`)
       .emit('offer', onlineMap[socket.nsp.name]);
   }
 
-  afterInit(server: Server) {
-    // console.log(server);
-  }
+  afterInit(server: Server) {}
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     if (!onlineMap[socket.nsp.name]) {

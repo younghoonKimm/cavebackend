@@ -2,7 +2,14 @@ import { IsString } from 'class-validator';
 import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
 export enum ConferenceStatus {
   Reserve = 'R',
@@ -34,20 +41,9 @@ export class ConferenceEntity extends CommonEntitiy {
   })
   users: UserEntity[];
 
-  @ManyToMany(() => AgendaEntity, (agenda) => agenda.conference, {
+  @OneToMany(() => AgendaEntity, (agenda) => agenda.conference, {
     cascade: true,
-    nullable: true,
+    onDelete: 'CASCADE',
   })
-  @JoinTable({
-    name: 'Agenda',
-    joinColumn: {
-      name: 'ConfrenceId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'AgendaId',
-      referencedColumnName: 'id',
-    },
-  })
-  agendas?: AgendaEntity[];
+  agendas: AgendaEntity[];
 }
