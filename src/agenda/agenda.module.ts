@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseModule } from 'src/databse/database.module';
+import { EventsGateway } from 'src/events/events.gateway';
+import { EventsModule } from 'src/events/events.module';
 
 import { UserEntity } from 'src/user/entities/user.entity';
 import { userProviders } from 'src/user/user.providers';
@@ -14,15 +16,15 @@ import { AgendaEntity } from './entities/agenda.entity';
   imports: [
     TypeOrmModule.forFeature([UserEntity, AgendaEntity]),
     DatabaseModule,
+    EventsModule,
   ],
   providers: [
     AgendaService,
-    // EventsGateway,
     JwtService,
     ...userProviders,
     ...agendaProviders,
+    EventsGateway,
   ],
   controllers: [AgendaController],
-  exports: [AgendaModule],
 })
 export class AgendaModule {}

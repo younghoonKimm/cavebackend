@@ -13,7 +13,7 @@ export class AgendaEntity extends CommonEntitiy {
   @IsString()
   text: string;
 
-  @OneToMany(() => ConferenceEntity, (conference) => conference.users, {})
+  @OneToMany(() => ConferenceEntity, (conference) => conference.agendas, {})
   // @JoinTable({
   //   name: 'conferences',
   //   joinColumn: {

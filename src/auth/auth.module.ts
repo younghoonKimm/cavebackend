@@ -13,6 +13,5 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([UserEntity]), DatabaseModule],
   controllers: [AuthController],
   providers: [AuthService, JwtService, GoogleStrategy, ...userProviders],
-  exports: [AuthModule],
 })
 export class AuthModule {}

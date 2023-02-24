@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventsGateway } from 'src/events/events.gateway';
 
 import { UserEntity } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -12,7 +13,8 @@ export class AgendaService {
     @Inject('AGENDA_REPOSITORY')
     private agendaInfo: Repository<AgendaEntity>,
 
-    @Inject('DATASOURCE') private dataSource: DataSource, // private readonly eventsGateway: EventsGateway,
+    @Inject('DATASOURCE') private dataSource: DataSource,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async patchAgenda(agendaId: string): Promise<void> {
@@ -24,11 +26,14 @@ export class AgendaService {
         })
         .getOne();
 
-      await this.agendaInfo.save({ ...agenda, title: '수정해버렸쥬' });
+      await this.agendaInfo.save({
+        ...agenda,
+        title: '수정해버렸쥬',
+      });
 
-      // this.eventsGateway.server
-      //   .to('/ws-53dbdbdf-04e1-44ac-91d5-721b2c90fdc3')
-      //   .emit('message', '수정해벌렷쮸');
+      this.eventsGateway.server
+        .to(`/ws-be2d1cd2-9c36-4236-8de5-93fd4e3df3bb`)
+        .emit('messaged', '왜안됨?');
     } catch (error) {
       console.log(error);
     }

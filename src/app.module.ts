@@ -9,10 +9,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './user/entities/user.entity';
 import { EventsModule } from './events/events.module';
-import { EventsGateway } from './events/events.gateway';
 import { ConferenceModule } from './conference/conference.module';
 import { ConferenceEntity } from './conference/entities/conference.entity';
-import { JwtService } from '@nestjs/jwt';
 import { AgendaModule } from './agenda/agenda.module';
 import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
@@ -55,12 +53,11 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
       }),
     }),
     AuthModule,
-    EventsModule,
     ConferenceModule,
     AgendaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EventsGateway, JwtService],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

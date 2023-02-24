@@ -27,7 +27,6 @@ import { ConferenceEntity } from './entities/conference.entity';
     ...agendaProviders,
   ],
   controllers: [ConferenceController],
-  exports: [ConferenceModule],
 })
 export class ConferenceModule {
   constructor() {}
