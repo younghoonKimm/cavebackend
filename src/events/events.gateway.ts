@@ -45,9 +45,15 @@ export class EventsGateway
 
       this.server
         .to(`${socket.nsp.name}`)
-        .emit('offer', onlineMap[socket.nsp.name]);
+        .emit('joined', onlineMap[socket.nsp.name]);
     }
   }
+
+  @SubscribeMessage('candidate')
+  handleCandidate(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: Socket,
+  ) {}
 
   afterInit(server: Server) {}
 
@@ -58,11 +64,11 @@ export class EventsGateway
   }
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const newNamespace = socket.nsp;
     delete onlineMap[socket.nsp.name][socket.id];
-    // let onlines = onlineMap[socket.nsp.name]?.filter(
-    //   (online: string | null) => online !== socket.id,
-    // );
+
+    this.server
+      .to(`${socket.nsp.name}`)
+      .emit('joined', onlineMap[socket.nsp.name]);
 
     // console.log('disconnect');
 
