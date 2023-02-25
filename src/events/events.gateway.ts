@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import { SocketUser } from 'src/types/auth';
+import { UserInputDto } from 'src/user/dto/user.dto';
 import { onlineMap } from './onlineMap';
 
 @WebSocketGateway({ namespace: /\/ws-.+/ })
@@ -33,38 +34,43 @@ export class EventsGateway
 
   @SubscribeMessage('login')
   handleLogin(
-    @MessageBody() data: { id: string; conference: string[] },
+    @MessageBody() user: UserInputDto,
     @ConnectedSocket() socket: Socket,
   ) {
-    socket.join(`${socket.nsp.name}`);
+    if (Object.entries(onlineMap[socket.nsp.name]).length > 3) {
+      socket.to(socket.id).emit('room_full');
+    } else {
+      onlineMap[socket.nsp.name][socket.id] = user;
+      socket.join(`${socket.nsp.name}`);
 
-    this.server
-      .to(`${socket.nsp.name}`)
-      .emit('offer', onlineMap[socket.nsp.name]);
+      this.server
+        .to(`${socket.nsp.name}`)
+        .emit('offer', onlineMap[socket.nsp.name]);
+    }
   }
 
   afterInit(server: Server) {}
 
   handleConnection(@ConnectedSocket() socket: Socket) {
     if (!onlineMap[socket.nsp.name]) {
-      onlineMap[socket.nsp.name] = [];
+      onlineMap[socket.nsp.name] = {};
     }
-
-    onlineMap[socket.nsp.name] = [...onlineMap[socket.nsp.name], socket.id];
   }
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
-    let onlines = onlineMap[socket.nsp.name]?.filter(
-      (online: string | null) => online !== socket.id,
-    );
+    const newNamespace = socket.nsp;
+    delete onlineMap[socket.nsp.name][socket.id];
+    // let onlines = onlineMap[socket.nsp.name]?.filter(
+    //   (online: string | null) => online !== socket.id,
+    // );
 
-    console.log('disconnect');
+    // console.log('disconnect');
 
-    if (onlines.length <= 0) {
-      delete onlineMap[socket.nsp.name];
-    } else {
-      onlineMap[socket.nsp.name] = onlines;
-    }
+    // if (onlines.length <= 0) {
+    //   delete onlineMap[socket.nsp.name];
+    // } else {
+    //   onlineMap[socket.nsp.name] = onlines;
+    // }
 
     // socket.to(`${socket.nsp.name}`).emit('messaged', onlineMap[socket.nsp.name]);
   }

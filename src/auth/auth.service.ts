@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 
@@ -27,13 +26,7 @@ export class AuthService {
     secret: string,
     expiresIn: string,
   ): Promise<string> {
-    return await this.jwtService.signAsync(
-      { data },
-      {
-        secret,
-        expiresIn,
-      },
-    );
+    return await this.jwtService.signAsync({ data }, { secret, expiresIn });
   }
 
   createAccesToken(data: UserInputDto): Promise<string> {
@@ -130,7 +123,6 @@ export class AuthService {
       const { accessToken, refreshToken } = await this.createTokens(user);
 
       this.updateRefreshToken(user, refreshToken);
-
       this.setResToken(res, accessToken, refreshToken);
 
       return res.redirect('/');

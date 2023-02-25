@@ -68,7 +68,7 @@ describe('AuthService', () => {
       };
       jest.spyOn(authService, 'logOutUser').mockImplementation(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise((resolve) => {
             resolve();
             res.clearCookie('CAV_ACC');
             res.clearCookie('CAV_RFS');
