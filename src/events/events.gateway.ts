@@ -37,7 +37,7 @@ export class EventsGateway
     @MessageBody() user: UserInputDto,
     @ConnectedSocket() socket: Socket,
   ) {
-    if (Object.entries(onlineMap[socket.nsp.name]).length > 3) {
+    if (Object.entries(onlineMap[socket.nsp.name]).length > 10) {
       socket.to(socket.id).emit('room_full');
     } else {
       onlineMap[socket.nsp.name][socket.id] = user;
@@ -49,11 +49,27 @@ export class EventsGateway
     }
   }
 
+  @SubscribeMessage('offer')
+  handleOffer(@MessageBody() sdp: any, @ConnectedSocket() socket: Socket) {
+    socket.broadcast.emit('getOffer', sdp);
+    console.log(sdp);
+    this.server.to(`${socket.nsp.name}`).emit('getOffer', sdp);
+  }
+
+  @SubscribeMessage('answer')
+  handleAnswer(@MessageBody() sdp: any, @ConnectedSocket() socket: Socket) {
+    socket.to(socket.id).emit('getAnswer', sdp);
+  }
+
   @SubscribeMessage('candidate')
   handleCandidate(
-    @MessageBody() data: any,
+    @MessageBody() candidate: any,
     @ConnectedSocket() socket: Socket,
-  ) {}
+  ) {
+    console.log(candidate);
+    socket.broadcast.emit('getCandidate', candidate);
+    this.server.to(`${socket.nsp.name}`).emit('getCandidate', candidate);
+  }
 
   afterInit(server: Server) {}
 
