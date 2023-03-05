@@ -52,13 +52,16 @@ export class EventsGateway
   @SubscribeMessage('offer')
   handleOffer(@MessageBody() sdp: any, @ConnectedSocket() socket: Socket) {
     socket.broadcast.emit('getOffer', sdp);
-    console.log(sdp);
-    this.server.to(`${socket.nsp.name}`).emit('getOffer', sdp);
+
+    // this.server.to(`${socket.nsp.name}`).emit('getOffer', sdp);
   }
 
   @SubscribeMessage('answer')
   handleAnswer(@MessageBody() sdp: any, @ConnectedSocket() socket: Socket) {
-    socket.to(socket.id).emit('getAnswer', sdp);
+    // console.log(socket.id);
+    // socket.to(socket.id).emit('getAnswer', sdp);
+
+    socket.broadcast.emit('getAnswer', sdp);
   }
 
   @SubscribeMessage('candidate')
@@ -66,9 +69,9 @@ export class EventsGateway
     @MessageBody() candidate: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(candidate);
     socket.broadcast.emit('getCandidate', candidate);
-    this.server.to(`${socket.nsp.name}`).emit('getCandidate', candidate);
+
+    // this.server.to(`${socket.nsp.name}`).emit('getCandidate', candidate);
   }
 
   afterInit(server: Server) {}
@@ -82,9 +85,12 @@ export class EventsGateway
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     delete onlineMap[socket.nsp.name][socket.id];
 
-    this.server
+    socket.broadcast
       .to(`${socket.nsp.name}`)
-      .emit('joined', onlineMap[socket.nsp.name]);
+      .emit('exit', onlineMap[socket.nsp.name]);
+    // this.server
+    //   .to(`${socket.nsp.name}`)
+    //   .emit('joined', onlineMap[socket.nsp.name]);
 
     // console.log('disconnect');
 

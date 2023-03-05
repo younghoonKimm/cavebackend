@@ -1,8 +1,6 @@
 import { ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { rejects } from 'assert';
-import { Response } from 'express';
 
 import { UserEntity } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
