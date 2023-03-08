@@ -132,9 +132,11 @@ export class AuthService {
     }
   }
 
-  async logOutUser(res): Promise<void> {
+  async logOutUser(res, user: UserInputDto): Promise<void> {
     res.clearCookie('CAV_ACC');
     res.clearCookie('CAV_RFS');
+
+    await this.userInfo.save(this.userInfo.create({ ...user, hashRT: null }));
 
     return res.redirect('/');
   }
@@ -166,6 +168,7 @@ export class AuthService {
         oldRefreshToken.toString(),
         {
           secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+          ignoreExpiration: true,
         },
       );
 

@@ -57,11 +57,15 @@ export class AuthController {
     return await this.authService.createfreshToken(oldRefreshToken, res);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get('/logout')
   @Header('Cache-Control', 'none')
   @HttpCode(HttpStatus.PERMANENT_REDIRECT)
-  async logOutUser(@Res({ passthrough: true }) res): Promise<void> {
-    return await this.authService.logOutUser(res);
+  async logOutUser(
+    @Res({ passthrough: true }) res,
+    @Token() user: UserInputDto,
+  ): Promise<void> {
+    return await this.authService.logOutUser(res, user);
   }
 
   @UseGuards(AccessTokenGuard)
