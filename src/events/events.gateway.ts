@@ -43,6 +43,8 @@ export class EventsGateway
       onlineMap[socket.nsp.name][socket.id] = user;
       socket.join(`${socket.nsp.name}`);
 
+      this.server.to(socket.id).emit('send-offer');
+
       this.server
         .to(`${socket.nsp.name}`)
         .emit('joined', onlineMap[socket.nsp.name]);
@@ -84,8 +86,8 @@ export class EventsGateway
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     delete onlineMap[socket.nsp.name][socket.id];
-
-    socket.broadcast
+    console.log(socket.nsp.name, 'exit');
+    this.server
       .to(`${socket.nsp.name}`)
       .emit('exit', onlineMap[socket.nsp.name]);
     // this.server
