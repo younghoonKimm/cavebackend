@@ -8,17 +8,11 @@ export async function startMediaSoup() {
     worker: Worker;
     router: Router;
   }> = [];
-  console.log(
-    await mediasoup.createWorker({
-      logLevel: 'debug',
-      rtcMinPort: 10000,
-      rtcMaxPort: 40000,
-    }),
-  );
+
   for (let i = 0; i < Object.keys(os.cpus()).length; i++) {
-    let worker = await mediasoup.createWorker({
-      //   logLevel: config.mediasoup.worker.logLevel,
-      //   logTags: config.mediasoup.worker.logTags,
+    const worker = await mediasoup.createWorker({
+      logLevel: 'debug',
+      logTags: config.mediasoup.worker.logTags,
       rtcMinPort: config.mediasoup.worker.rtcMinPort,
       rtcMaxPort: config.mediasoup.worker.rtcMaxPort,
     });

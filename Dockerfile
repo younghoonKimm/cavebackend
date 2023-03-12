@@ -1,4 +1,10 @@
-FROM node:alpine
+FROM node:latest
+
+RUN npm install yarn
+
+RUN apt -y update
+
+RUN apt -y install python3-pip
 
 WORKDIR /app
 
@@ -10,4 +16,4 @@ RUN yarn install
 
 COPY . .
 
-CMD  ["yarn","start:prod"]
+CMD  ["yarn","start:dev"]
