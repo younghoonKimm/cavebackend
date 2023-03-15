@@ -9,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { startMediaSoup } from 'src/mediasoup/startMediaSoup';
 
 import { SocketUser } from 'src/types/auth';
 import { UserInputDto } from 'src/user/dto/user.dto';
@@ -33,7 +34,7 @@ export class EventsGateway
   }
 
   @SubscribeMessage('login')
-  handleLogin(
+  async handleLogin(
     @MessageBody() user: UserInputDto,
     @ConnectedSocket() socket: Socket,
   ) {
@@ -42,6 +43,10 @@ export class EventsGateway
     } else {
       onlineMap[socket.nsp.name][socket.id] = user;
       socket.join(`${socket.nsp.name}`);
+
+      // const msp = await startMediaSoup();
+
+      // console.log(msp);
 
       this.server.to(socket.id).emit('send-offer');
 
@@ -86,7 +91,7 @@ export class EventsGateway
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     delete onlineMap[socket.nsp.name][socket.id];
-    console.log(socket.nsp.name, 'exit');
+
     this.server
       .to(`${socket.nsp.name}`)
       .emit('exit', onlineMap[socket.nsp.name]);

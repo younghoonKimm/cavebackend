@@ -1,6 +1,6 @@
 import * as os from 'os';
 import * as mediasoup from 'mediasoup';
-import { Router, Worker } from 'mediasoup/node/lib/types';
+import { Router, Worker } from 'mediasoup/lib/types';
 import { config } from './config';
 
 export async function startMediaSoup() {
