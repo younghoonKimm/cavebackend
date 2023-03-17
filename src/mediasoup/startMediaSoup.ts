@@ -3,6 +3,8 @@ import * as mediasoup from 'mediasoup';
 import { Router, Worker } from 'mediasoup/lib/types';
 import { config } from './config';
 
+export const mediasoupWorkers = new Map();
+
 export async function startMediaSoup() {
   const workers: Array<{
     worker: Worker;
@@ -27,6 +29,10 @@ export async function startMediaSoup() {
       const router = await worker.createRouter({ mediaCodecs });
 
       workers.push({ worker, router });
+
+      mediasoupWorkers.set(worker.pid, worker);
+
+      console.log(mediasoupWorkers[0]);
     } catch (e) {
       console.log(e);
     }

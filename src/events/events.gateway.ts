@@ -9,7 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { startMediaSoup } from 'src/mediasoup/startMediaSoup';
+import { mediasoupWorkers, startMediaSoup } from 'src/mediasoup/startMediaSoup';
 
 import { SocketUser } from 'src/types/auth';
 import { UserInputDto } from 'src/user/dto/user.dto';
@@ -29,7 +29,7 @@ export class EventsGateway
     @ConnectedSocket() client: SocketUser,
   ): string {
     this.server.to(`${client.nsp.name}`).emit('messaged', data);
-
+    // const rtpCapabilities = router.rtpCapabilities
     return data;
   }
 
@@ -44,11 +44,11 @@ export class EventsGateway
       onlineMap[socket.nsp.name][socket.id] = user;
       socket.join(`${socket.nsp.name}`);
 
-      // const msp = await startMediaSoup();
+      // this.server.to(socket.id).emit('send-offer');
 
-      // console.log(msp);
-
-      this.server.to(socket.id).emit('send-offer');
+      this.server
+        .to(socket.id)
+        .emit('get-capability', [...mediasoupWorkers][0]);
 
       this.server
         .to(`${socket.nsp.name}`)
