@@ -36,6 +36,38 @@ export const config = {
         },
       ] as RtpCodecCapability[],
     },
+    webRtcTransportOptions: {
+      // listenIps is not needed since webRtcServer is used.
+      // However passing MEDIASOUP_USE_WEBRTC_SERVER=false will change it.
+      listenIps: [
+        {
+          ip: process.env.MEDIASOUP_LISTEN_IP || '0.0.0.0',
+          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+        },
+      ],
+      initialAvailableOutgoingBitrate: 1000000,
+      minimumAvailableOutgoingBitrate: 600000,
+      maxSctpMessageSize: 262144,
+      // Additional options that are not part of WebRtcTransportOptions.
+      maxIncomingBitrate: 1500000,
+    },
+
+    webRtcServerOptions: {
+      listenInfos: [
+        {
+          protocol: 'udp',
+          ip: process.env.MEDIASOUP_LISTEN_IP || '0.0.0.0',
+          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+          port: 44444,
+        },
+        {
+          protocol: 'tcp',
+          ip: process.env.MEDIASOUP_LISTEN_IP || '0.0.0.0',
+          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+          port: 44444,
+        },
+      ],
+    },
 
     // rtp listenIps are the most important thing, below. you'll need
     // to set these appropriately for your network for the demo to
@@ -49,5 +81,13 @@ export const config = {
       ],
       initialAvailableOutgoingBitrate: 800000,
     },
+  },
+
+  plainTransportOptions: {
+    listenIp: {
+      ip: process.env.MEDIASOUP_LISTEN_IP || '0.0.0.0',
+      // announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+    },
+    maxSctpMessageSize: 262144,
   },
 } as const;

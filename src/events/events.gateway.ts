@@ -9,18 +9,51 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Room } from 'src/mediasoup/Room';
 import { mediasoupWorkers, startMediaSoup } from 'src/mediasoup/startMediaSoup';
 
 import { SocketUser } from 'src/types/auth';
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { onlineMap } from './onlineMap';
 
+let nextMediasoupWorkerIdx = 0;
+
+function getMediasoupWorker() {
+  const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
+
+  if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length)
+    nextMediasoupWorkerIdx = 0;
+
+  return worker;
+}
+
 @WebSocketGateway({ namespace: /\/ws-.+/ })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor() {}
+  rooms: Map<any, any>;
+  constructor() {
+    this.rooms = new Map();
+  }
   @WebSocketServer() public server: Server;
+
+  async getOrCreateRoom({ roomId, consumerReplicas }) {
+    let room = this.rooms.get(roomId);
+    // If the Room does not exist create a new one.
+    if (!room) {
+      const mediasoupWorker = getMediasoupWorker();
+
+      room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
+
+      this.rooms.set(roomId, room);
+
+      console.log(room);
+
+      room.on('close', () => this.rooms.delete(roomId));
+    }
+
+    return room;
+  }
 
   @SubscribeMessage('message')
   // @UseGuards(SocketGuard)
@@ -38,6 +71,11 @@ export class EventsGateway
     @MessageBody() user: UserInputDto,
     @ConnectedSocket() socket: Socket,
   ) {
+    if (!onlineMap[socket.nsp.name]) {
+      const mediasoupWorker = getMediasoupWorker();
+
+      //  await Room.create({ mediasoupWorker, roomId, consumerReplicas });
+    }
     if (Object.entries(onlineMap[socket.nsp.name]).length > 10) {
       socket.to(socket.id).emit('room_full');
     } else {
@@ -45,10 +83,11 @@ export class EventsGateway
       socket.join(`${socket.nsp.name}`);
 
       // this.server.to(socket.id).emit('send-offer');
-
-      this.server
-        .to(socket.id)
-        .emit('get-capability', [...mediasoupWorkers][0]);
+      await this.getOrCreateRoom({
+        roomId: socket.nsp.name,
+        consumerReplicas: socket.id,
+      });
+      this.server.to(socket.id).emit('get-capability', getMediasoupWorker());
 
       this.server
         .to(`${socket.nsp.name}`)

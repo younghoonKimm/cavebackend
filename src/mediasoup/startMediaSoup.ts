@@ -3,12 +3,12 @@ import * as mediasoup from 'mediasoup';
 import { Router, Worker } from 'mediasoup/lib/types';
 import { config } from './config';
 
-export const mediasoupWorkers = new Map();
+export const mediasoupWorkers: any = new Map();
 
 export async function startMediaSoup() {
   const workers: Array<{
     worker: Worker;
-    router: Router;
+    // router: Router;
   }> = [];
 
   for (let i = 0; i < Object.keys(os.cpus()).length; i++) {
@@ -26,13 +26,11 @@ export async function startMediaSoup() {
       });
 
       const mediaCodecs = config.mediasoup.router.mediaCodecs;
-      const router = await worker.createRouter({ mediaCodecs });
+      // const router = await worker.createRouter({ mediaCodecs });
 
-      workers.push({ worker, router });
+      workers.push({ worker });
 
-      mediasoupWorkers.set(worker.pid, worker);
-
-      console.log(mediasoupWorkers[0]);
+      mediasoupWorkers.set(worker.pid, { worker });
     } catch (e) {
       console.log(e);
     }
