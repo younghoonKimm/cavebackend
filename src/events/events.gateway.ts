@@ -8,7 +8,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { AwaitQueue } from 'awaitqueue';
 import { Server, Socket } from 'socket.io';
+import { Peer } from 'src/mediasoup/Peer';
 import { Room } from 'src/mediasoup/Room';
 import { mediasoupWorkers, startMediaSoup } from 'src/mediasoup/startMediaSoup';
 
@@ -18,42 +20,83 @@ import { onlineMap } from './onlineMap';
 
 let nextMediasoupWorkerIdx = 0;
 
-function getMediasoupWorker() {
-  const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
-
-  if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length)
-    nextMediasoupWorkerIdx = 0;
-
-  return worker;
-}
+const queue = new AwaitQueue();
 
 @WebSocketGateway({ namespace: /\/ws-.+/ })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   rooms: Map<any, any>;
+  peers: Map<any, any>;
   constructor() {
     this.rooms = new Map();
+    this.peers = new Map();
   }
   @WebSocketServer() public server: Server;
+
+  getMediasoupWorker() {
+    const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
+
+    if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length)
+      nextMediasoupWorkerIdx = 0;
+
+    return worker;
+  }
 
   async getOrCreateRoom({ roomId, consumerReplicas }) {
     let room = this.rooms.get(roomId);
     // If the Room does not exist create a new one.
     if (!room) {
-      const mediasoupWorker = getMediasoupWorker();
+      const mediasoupWorker = this.getMediasoupWorker();
 
       room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
 
-      this.rooms.set(roomId, room);
-
-      console.log(room);
+      this.rooms.set(roomId, { room });
 
       room.on('close', () => this.rooms.delete(roomId));
     }
 
     return room;
   }
+
+  createWebRtcTransport = async (router) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportOptions
+        const webRtcTransport_options = {
+          listenIps: [
+            {
+              ip: '0.0.0.0', // replace with relevant IP address
+              // announcedIp: '10.0.0.115',
+            },
+          ],
+          enableUdp: true,
+          enableTcp: true,
+          preferUdp: true,
+        };
+
+        // https://mediasoup.org/documentation/v3/mediasoup/api/#router-createWebRtcTransport
+        let transport = await router.createWebRtcTransport(
+          webRtcTransport_options,
+        );
+        console.log(`transport id: ${transport.id}`);
+
+        transport.on('dtlsstatechange', (dtlsState) => {
+          if (dtlsState === 'closed') {
+            transport.close();
+          }
+        });
+
+        transport.on('close', () => {
+          console.log('transport closed');
+        });
+
+        resolve(transport);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
 
   @SubscribeMessage('message')
   // @UseGuards(SocketGuard)
@@ -71,27 +114,36 @@ export class EventsGateway
     @MessageBody() user: UserInputDto,
     @ConnectedSocket() socket: Socket,
   ) {
-    if (!onlineMap[socket.nsp.name]) {
-      const mediasoupWorker = getMediasoupWorker();
+    // if (!onlineMap[socket.nsp.name]) {
+    //   const mediasoupWorker = this.getMediasoupWorker();
 
-      //  await Room.create({ mediasoupWorker, roomId, consumerReplicas });
-    }
-    if (Object.entries(onlineMap[socket.nsp.name]).length > 10) {
+    //  await Room.create({ mediasoupWorker, roomId, consumerReplicas });
+    // }
+    if (Object.entries(onlineMap[socket.nsp.name]).length > 6) {
       socket.to(socket.id).emit('room_full');
     } else {
       onlineMap[socket.nsp.name][socket.id] = user;
       socket.join(`${socket.nsp.name}`);
 
-      // this.server.to(socket.id).emit('send-offer');
-      await this.getOrCreateRoom({
+      const newRoom = await this.getOrCreateRoom({
         roomId: socket.nsp.name,
         consumerReplicas: socket.id,
       });
-      this.server.to(socket.id).emit('get-capability', getMediasoupWorker());
 
-      this.server
-        .to(`${socket.nsp.name}`)
-        .emit('joined', onlineMap[socket.nsp.name]);
+      queue.push(async () => {
+        newRoom;
+
+        const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
+        this.peers.set(`${socket.id}`, peer);
+
+        this.server
+          .to(socket.id)
+          .emit('get-capability', newRoom._mediasoupRouter.rtpCapabilities);
+
+        this.server
+          .to(`${socket.nsp.name}`)
+          .emit('joined', onlineMap[socket.nsp.name]);
+      });
     }
   }
 
@@ -120,6 +172,39 @@ export class EventsGateway
     // this.server.to(`${socket.nsp.name}`).emit('getCandidate', candidate);
   }
 
+  @SubscribeMessage('createWebRtcTransport')
+  async handleCreateWebRtcTransport(
+    @MessageBody() { consumer },
+    callback,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const router = this.rooms.get(socket.nsp.name).room._mediasoupRouter;
+    const peer = this.peers.get(socket.id);
+    console.log(callback);
+    if (router && peer) {
+      try {
+        const transport: any = await this.createWebRtcTransport(router);
+        if (transport) {
+          await callback({
+            params: {
+              id: transport._internal.transportId,
+              iceParameters: transport._data.iceParameters,
+              iceCandidates: transport._data.iceCandidates,
+              dtlsParameters: transport._data.dtlsParameters,
+            },
+          });
+
+          peer.addTransport(socket.id, transport);
+          peer.addConsumer(socket.id, consumer);
+
+          console.log(peer);
+        }
+      } catch (error) {
+        return error;
+      }
+    }
+  }
+
   afterInit(server: Server) {}
 
   handleConnection(@ConnectedSocket() socket: Socket) {
@@ -129,7 +214,8 @@ export class EventsGateway
   }
 
   handleDisconnect(@ConnectedSocket() socket: Socket) {
-    delete onlineMap[socket.nsp.name][socket.id];
+    // delete onlineMap[socket.nsp.name][socket.id];
+    this.rooms.delete(socket.id);
 
     this.server
       .to(`${socket.nsp.name}`)

@@ -68,7 +68,7 @@ export class Room extends EventEmitter {
   }) {
     super();
 
-    this.setMaxListeners(Infinity);
+    this.setMaxListeners(6);
 
     // Room id.
     // @type {String}
@@ -124,9 +124,6 @@ export class Room extends EventEmitter {
    */
   close() {
     this._closed = true;
-
-    // Close the protoo Room.
-    this._protooRoom.close();
 
     // Close the mediasoup Router.
     this._mediasoupRouter.close();
