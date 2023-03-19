@@ -174,30 +174,27 @@ export class EventsGateway
 
   @SubscribeMessage('createWebRtcTransport')
   async handleCreateWebRtcTransport(
-    @MessageBody() { consumer },
-    callback,
     @ConnectedSocket() socket: Socket,
+    @MessageBody() { consumer }: { consumer: boolean }, // callback: any,
   ) {
     const router = this.rooms.get(socket.nsp.name).room._mediasoupRouter;
     const peer = this.peers.get(socket.id);
-    console.log(callback);
+
     if (router && peer) {
       try {
         const transport: any = await this.createWebRtcTransport(router);
         if (transport) {
-          await callback({
-            params: {
-              id: transport._internal.transportId,
-              iceParameters: transport._data.iceParameters,
-              iceCandidates: transport._data.iceCandidates,
-              dtlsParameters: transport._data.dtlsParameters,
-            },
-          });
-
           peer.addTransport(socket.id, transport);
           peer.addConsumer(socket.id, consumer);
 
-          console.log(peer);
+          const params = {
+            id: transport._internal.transportId,
+            iceParameters: transport._data.iceParameters,
+            iceCandidates: transport._data.iceCandidates,
+            dtlsParameters: transport._data.dtlsParameters,
+          };
+
+          return { params };
         }
       } catch (error) {
         return error;
