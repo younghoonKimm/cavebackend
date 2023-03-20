@@ -188,11 +188,13 @@ export class EventsGateway
           peer.addConsumer(socket.id, consumer);
 
           const params = {
-            id: transport._internal.transportId,
-            iceParameters: transport._data.iceParameters,
-            iceCandidates: transport._data.iceCandidates,
-            dtlsParameters: transport._data.dtlsParameters,
+            id: transport.id,
+            iceParameters: transport.iceParameters,
+            iceCandidates: transport.iceCandidates,
+            dtlsParameters: transport.dtlsParameters,
           };
+
+          console.log(params);
 
           return { params };
         }
@@ -200,6 +202,11 @@ export class EventsGateway
         return error;
       }
     }
+  }
+
+  @SubscribeMessage('transport-connect')
+  transportConnect(@MessageBody() { dtlsParameters }: any) {
+    // getTransport(socket.id).connect({ dtlsParameters });
   }
 
   afterInit(server: Server) {}
