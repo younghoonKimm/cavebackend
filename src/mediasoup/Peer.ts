@@ -49,6 +49,10 @@ export class Peer extends EventEmitter {
     this.transports.set(id, transport);
   }
 
+  getTransport(id: string) {
+    return this.transports.get(id);
+  }
+
   get producers() {
     return this._producers;
   }

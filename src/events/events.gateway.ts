@@ -79,7 +79,6 @@ export class EventsGateway
         let transport = await router.createWebRtcTransport(
           webRtcTransport_options,
         );
-        console.log(`transport id: ${transport.id}`);
 
         transport.on('dtlsstatechange', (dtlsState) => {
           if (dtlsState === 'closed') {
@@ -194,8 +193,6 @@ export class EventsGateway
             dtlsParameters: transport.dtlsParameters,
           };
 
-          console.log(params);
-
           return { params };
         }
       } catch (error) {
@@ -205,8 +202,43 @@ export class EventsGateway
   }
 
   @SubscribeMessage('transport-connect')
-  transportConnect(@MessageBody() { dtlsParameters }: any) {
-    // getTransport(socket.id).connect({ dtlsParameters });
+  transportConnect(
+    @MessageBody() { dtlsParameters }: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const peer = this.peers.get(socket.id);
+
+    console.log('cn', dtlsParameters);
+
+    peer.getTransport(socket.id).connect({ dtlsParameters });
+  }
+
+  @SubscribeMessage('transport-produce')
+  async transportProduce(
+    @MessageBody() { kind, rtpParameters, appData }: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const peer = this.peers.get(socket.id);
+
+    const producer = await peer.getTransport(socket.id).produce({
+      kind,
+      rtpParameters,
+    });
+
+    console.log('Producer ID: ', producer.id, producer.kind);
+
+    producer.on('transportclose', () => {
+      console.log('transport for this producer closed ');
+      producer.close();
+    });
+
+    return {
+      id: producer.id,
+      isProducer: false,
+      // isProducer: producers.length > 1 ? true : false,
+    };
+
+    // const socket.nsp.name
   }
 
   afterInit(server: Server) {}

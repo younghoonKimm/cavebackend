@@ -76,7 +76,7 @@ export const config = {
       listenIps: [
         {
           ip: process.env.WEBRTC_LISTEN_IP || '0.0.0.0',
-          announcedIp: null,
+          // announcedIp: null,
         },
       ],
       initialAvailableOutgoingBitrate: 800000,
