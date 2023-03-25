@@ -37,8 +37,11 @@ export class EventsGateway
   getMediasoupWorker() {
     const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
 
-    if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length)
+    if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length) {
       nextMediasoupWorkerIdx = 0;
+    } else {
+      ++nextMediasoupWorkerIdx;
+    }
 
     return worker;
   }
@@ -48,12 +51,12 @@ export class EventsGateway
     // If the Room does not exist create a new one.
     if (!room) {
       const mediasoupWorker = this.getMediasoupWorker();
-
+      console.log(mediasoupWorker);
       room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
 
-      this.rooms.set(roomId, { room });
-
       room.on('close', () => this.rooms.delete(roomId));
+
+      this.rooms.set(roomId, { room });
     }
 
     return room;
@@ -118,32 +121,47 @@ export class EventsGateway
 
     //  await Room.create({ mediasoupWorker, roomId, consumerReplicas });
     // }
-    if (Object.entries(onlineMap[socket.nsp.name]).length > 6) {
-      socket.to(socket.id).emit('room_full');
-    } else {
-      onlineMap[socket.nsp.name][socket.id] = user;
-      socket.join(`${socket.nsp.name}`);
 
-      const newRoom = await this.getOrCreateRoom({
-        roomId: socket.nsp.name,
-        consumerReplicas: socket.id,
-      });
+    // if (room) {
+    //   socket.to(socket.id).emit('room_full');
+    // } else {
+    // onlineMap[socket.nsp.name][socket.id] = user;
+    socket.join(`${socket.nsp.name}`);
 
-      queue.push(async () => {
-        newRoom;
+    queue.push(async () => {
+      try {
+        const newRoom = await this.getOrCreateRoom({
+          roomId: socket.nsp.name,
+          consumerReplicas: socket.id,
+        });
 
         const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
         this.peers.set(`${socket.id}`, peer);
 
-        this.server
-          .to(socket.id)
-          .emit('get-capability', newRoom._mediasoupRouter.rtpCapabilities);
+        const rtpCapabilities = newRoom._mediasoupRouter.rtpCapabilities;
+
+        console.log(newRoom._mediasoupRouter);
+        this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
 
         this.server
           .to(`${socket.nsp.name}`)
           .emit('joined', onlineMap[socket.nsp.name]);
-      });
-    }
+
+        return;
+      } catch (e) {
+        console.log(e);
+      }
+    });
+    // }
+  }
+
+  @SubscribeMessage('joinRoom')
+  joinRoom(
+    @MessageBody() rtpCapabilities: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
+    // this.server.to(`${socket.nsp.name}`).emit('getOffer', sdp);
   }
 
   @SubscribeMessage('offer')
@@ -225,20 +243,35 @@ export class EventsGateway
       rtpParameters,
     });
 
-    console.log('Producer ID: ', producer.id, producer.kind);
+    // console.log('Producer ID: ', producer.id, producer.kind);
 
     producer.on('transportclose', () => {
       console.log('transport for this producer closed ');
       producer.close();
     });
 
+    const producers = [...this.peers].filter(([id, value]) =>
+      value.roomId === socket.nsp.name ? value : null,
+    );
+
+    // console.log(producers);
     return {
       id: producer.id,
-      isProducer: false,
+      isProducer: producers.length > 1 ? true : false,
       // isProducer: producers.length > 1 ? true : false,
     };
 
     // const socket.nsp.name
+  }
+
+  @SubscribeMessage('getProducers')
+  async getProducers(
+    @MessageBody()
+    @ConnectedSocket()
+    socket: Socket,
+  ) {
+    const producerIds = [];
+    return producerIds;
   }
 
   afterInit(server: Server) {}
