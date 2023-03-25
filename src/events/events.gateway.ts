@@ -51,12 +51,12 @@ export class EventsGateway
     // If the Room does not exist create a new one.
     if (!room) {
       const mediasoupWorker = this.getMediasoupWorker();
-      console.log(mediasoupWorker);
+
       room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
 
       room.on('close', () => this.rooms.delete(roomId));
 
-      this.rooms.set(roomId, { room });
+      this.rooms.set(roomId, room);
     }
 
     return room;
@@ -138,9 +138,10 @@ export class EventsGateway
         const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
         this.peers.set(`${socket.id}`, peer);
 
+        console.log(this.rooms, this.rooms.get(socket.nsp.name));
+
         const rtpCapabilities = newRoom._mediasoupRouter.rtpCapabilities;
 
-        console.log(newRoom._mediasoupRouter);
         this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
 
         this.server
@@ -194,7 +195,7 @@ export class EventsGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() { consumer }: { consumer: boolean }, // callback: any,
   ) {
-    const router = this.rooms.get(socket.nsp.name).room._mediasoupRouter;
+    const router = this.rooms.get(socket.nsp.name)._mediasoupRouter;
     const peer = this.peers.get(socket.id);
 
     if (router && peer) {
