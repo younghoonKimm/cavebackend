@@ -138,8 +138,6 @@ export class EventsGateway
         const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
         this.peers.set(`${socket.id}`, peer);
 
-        console.log(this.rooms, this.rooms.get(socket.nsp.name));
-
         const rtpCapabilities = newRoom._mediasoupRouter.rtpCapabilities;
 
         this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
@@ -227,8 +225,6 @@ export class EventsGateway
   ) {
     const peer = this.peers.get(socket.id);
 
-    console.log('cn', dtlsParameters);
-
     peer.getTransport(socket.id).connect({ dtlsParameters });
   }
 
@@ -251,11 +247,15 @@ export class EventsGateway
       producer.close();
     });
 
-    const producers = [...this.peers].filter(([id, value]) =>
-      value.roomId === socket.nsp.name ? value : null,
+    const producers = [...this.peers]?.filter(([id, value]) =>
+      value._roomId === socket.nsp.name ? value : null,
     );
 
-    // console.log(producers);
+    producer.on('transportclose', () => {
+      console.log('transport for this producer closed ');
+      producer.close();
+    });
+
     return {
       id: producer.id,
       isProducer: producers.length > 1 ? true : false,
@@ -266,12 +266,16 @@ export class EventsGateway
   }
 
   @SubscribeMessage('getProducers')
-  async getProducers(
-    @MessageBody()
+  getProducers(
     @ConnectedSocket()
     socket: Socket,
   ) {
-    const producerIds = [];
+    const producerIds = [...this.peers]?.filter(([id, value]) =>
+      value._roomId === socket.nsp?.name ? value : null,
+    );
+
+    console.log(producerIds);
+
     return producerIds;
   }
 
