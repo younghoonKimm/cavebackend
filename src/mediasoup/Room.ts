@@ -1,5 +1,5 @@
 import { EventEmitter } from 'stream';
-import { config } from './config';
+// import { config } from './config';
 
 /**
  * Room class.
@@ -31,11 +31,11 @@ export class Room extends EventEmitter {
    */
   static async create({ mediasoupWorker, roomId, consumerReplicas }: any) {
     // Router media codecs.
-    const { mediaCodecs } = config.mediasoup.router;
+    // const { mediaCodecs } = config.mediasoup.router;
 
     // Create a mediasoup Router.
     const mediasoupRouter = await mediasoupWorker[1].worker.createRouter({
-      mediaCodecs,
+      // mediaCodecs,
     });
 
     // Create a mediasoup AudioLevelObserver.

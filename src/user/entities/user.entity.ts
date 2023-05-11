@@ -39,7 +39,7 @@ export class UserEntity extends CommonEntitiy {
   @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {})
   conferences: ConferenceEntity[];
 
-  @Column({ nullable: true, length: 500 })
+  @Column({ nullable: true, length: 3000 })
   @IsString()
   hashRT?: string;
 }

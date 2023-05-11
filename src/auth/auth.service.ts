@@ -172,6 +172,8 @@ export class AuthService {
         },
       );
 
+      console.log(this.userInfo);
+
       const userData = await this.userInfo.findOne({
         where: {
           id: data.id,

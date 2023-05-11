@@ -10,9 +10,9 @@ import {
 } from '@nestjs/websockets';
 import { AwaitQueue } from 'awaitqueue';
 import { Server, Socket } from 'socket.io';
-import { Peer } from 'src/mediasoup/Peer';
-import { Room } from 'src/mediasoup/Room';
-import { mediasoupWorkers, startMediaSoup } from 'src/mediasoup/startMediaSoup';
+// import { Peer } from 'src/mediasoup/Peer';
+// import { Room } from 'src/mediasoup/Room';
+// import { mediasoupWorkers, startMediaSoup } from 'src/mediasoup/startMediaSoup';
 
 import { SocketUser } from 'src/types/auth';
 import { UserInputDto } from 'src/user/dto/user.dto';
@@ -34,33 +34,33 @@ export class EventsGateway
   }
   @WebSocketServer() public server: Server;
 
-  getMediasoupWorker() {
-    const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
+  // getMediasoupWorker() {
+  //   const worker = [...mediasoupWorkers][nextMediasoupWorkerIdx];
 
-    if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length) {
-      nextMediasoupWorkerIdx = 0;
-    } else {
-      ++nextMediasoupWorkerIdx;
-    }
+  //   if (++nextMediasoupWorkerIdx === [...mediasoupWorkers].length) {
+  //     nextMediasoupWorkerIdx = 0;
+  //   } else {
+  //     ++nextMediasoupWorkerIdx;
+  //   }
 
-    return worker;
-  }
+  //   return worker;
+  // }
 
-  async getOrCreateRoom({ roomId, consumerReplicas }) {
-    let room = this.rooms.get(roomId);
-    // If the Room does not exist create a new one.
-    if (!room) {
-      const mediasoupWorker = this.getMediasoupWorker();
+  // async getOrCreateRoom({ roomId, consumerReplicas }) {
+  //   let room = this.rooms.get(roomId);
+  //   // If the Room does not exist create a new one.
+  //   if (!room) {
+  //     const mediasoupWorker = this.getMediasoupWorker();
 
-      room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
+  //     room = await Room.create({ mediasoupWorker, roomId, consumerReplicas });
 
-      room.on('close', () => this.rooms.delete(roomId));
+  //     room.on('close', () => this.rooms.delete(roomId));
 
-      this.rooms.set(roomId, room);
-    }
+  //     this.rooms.set(roomId, room);
+  //   }
 
-    return room;
-  }
+  //   return room;
+  // }
 
   createWebRtcTransport = async (router) => {
     return new Promise(async (resolve, reject) => {
@@ -128,29 +128,29 @@ export class EventsGateway
     // onlineMap[socket.nsp.name][socket.id] = user;
     socket.join(`${socket.nsp.name}`);
 
-    queue.push(async () => {
-      try {
-        const newRoom = await this.getOrCreateRoom({
-          roomId: socket.nsp.name,
-          consumerReplicas: socket.id,
-        });
+    // queue.push(async () => {
+    //   try {
+    //     const newRoom = await this.getOrCreateRoom({
+    //       roomId: socket.nsp.name,
+    //       consumerReplicas: socket.id,
+    //     });
 
-        const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
-        this.peers.set(`${socket.id}`, peer);
+    //     // const peer = new Peer({ id: socket.id, roomId: socket.nsp.name });
+    //     // this.peers.set(`${socket.id}`, peer);
 
-        const rtpCapabilities = newRoom._mediasoupRouter.rtpCapabilities;
+    //     const rtpCapabilities = newRoom._mediasoupRouter.rtpCapabilities;
 
-        this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
+    //     this.server.to(socket.id).emit('joinRoom', rtpCapabilities);
 
-        this.server
-          .to(`${socket.nsp.name}`)
-          .emit('joined', onlineMap[socket.nsp.name]);
+    //     this.server
+    //       .to(`${socket.nsp.name}`)
+    //       .emit('joined', onlineMap[socket.nsp.name]);
 
-        return;
-      } catch (e) {
-        console.log(e);
-      }
-    });
+    //     return;
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // });
     // }
   }
 
