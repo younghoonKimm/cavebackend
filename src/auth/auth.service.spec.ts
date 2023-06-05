@@ -16,7 +16,12 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     jwtService = new JwtService();
-    authService = new AuthService(userEntitiy, jwtService, configService);
+    authService = new AuthService(
+      userEntitiy,
+      jwtService,
+      configService,
+      false,
+    );
     authController = new AuthController(authService);
   });
 
