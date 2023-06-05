@@ -106,6 +106,7 @@ export class AuthService {
       const msQuery = this.dataSource.createQueryRunner('master');
       const { socialPlatform, email } = data;
       let user: UserEntity;
+
       const isUser = await this.userInfo
         .createQueryBuilder('user_entity')
         .setQueryRunner(msQuery)
@@ -127,7 +128,7 @@ export class AuthService {
       this.updateRefreshToken(user, refreshToken);
       this.setResToken(res, accessToken, refreshToken);
 
-      return res.redirect('http://localhost:3000');
+      return res.redirect('/');
     } catch (error) {
       this.clearResToken(res);
       throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
@@ -164,7 +165,8 @@ export class AuthService {
     res: Response,
   ): Promise<AuthTokenOutput> {
     let userProfile: UserEntity | null;
-    const msQuery = this.dataSource.createQueryRunner('slave');
+    const slaveQuery = this.dataSource.createQueryRunner('master');
+
     try {
       const { data } = await this.jwtService.verify(
         oldRefreshToken.toString(),
@@ -173,32 +175,19 @@ export class AuthService {
           ignoreExpiration: true,
         },
       );
+
       const { id, email } = data;
       const userData = await this.userInfo
         .createQueryBuilder('user_entity')
-        .setQueryRunner(msQuery)
+        .setQueryRunner(slaveQuery)
         .where('user_entity.id = :id AND user_entity.email = :email', {
           id,
           email,
         })
         .getOne();
 
-      const allUser = await this.userInfo
-        .createQueryBuilder('user_entity')
-        .setQueryRunner(msQuery)
-        .getMany();
-
-      // const x = await this.dataSource
-      //   .createQueryRunner(msQuery)
-      //   .getRepository('user_entity')
-      //   .findOne({
-      //     where: {
-      //       id: data.id,
-      //       email: data.email,
-      //     },
-      //   });
-      // console.log(x, allUser);
-      this.userInfo.findOne({});
+      console.log(userData, 'ms');
+      // console.log(userData, 'sl');
 
       userProfile = userData;
 
