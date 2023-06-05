@@ -43,8 +43,6 @@ export class AuthController {
       name,
     };
 
-    console.log(newUser);
-
     return await this.authService.logInUser(newUser, res);
   }
 

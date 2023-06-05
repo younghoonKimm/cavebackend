@@ -1,10 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { UserInputDto } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
-
 import { AuthTokenOutput, UserOutput } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
@@ -14,9 +13,10 @@ import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject('DATASOURCE')
+    private dataSource: DataSource,
     @Inject('USER_REPOSITORY')
     private userInfo: Repository<UserEntity>,
-
     private jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -103,10 +103,12 @@ export class AuthService {
   }
   async logInUser(data: UserInputDto, res: Response): Promise<void> {
     try {
+      const msQuery = this.dataSource.createQueryRunner('master');
       const { socialPlatform, email } = data;
       let user: UserEntity;
       const isUser = await this.userInfo
         .createQueryBuilder('user_entity')
+        .setQueryRunner(msQuery)
         .where(
           'user_entity.socialPlatform = :socialPlatform AND user_entity.email = :email',
           { socialPlatform, email },
@@ -125,7 +127,7 @@ export class AuthService {
       this.updateRefreshToken(user, refreshToken);
       this.setResToken(res, accessToken, refreshToken);
 
-      return res.redirect('/');
+      return res.redirect('http://localhost:3000');
     } catch (error) {
       this.clearResToken(res);
       throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
@@ -162,7 +164,7 @@ export class AuthService {
     res: Response,
   ): Promise<AuthTokenOutput> {
     let userProfile: UserEntity | null;
-
+    const msQuery = this.dataSource.createQueryRunner('slave');
     try {
       const { data } = await this.jwtService.verify(
         oldRefreshToken.toString(),
@@ -171,15 +173,32 @@ export class AuthService {
           ignoreExpiration: true,
         },
       );
+      const { id, email } = data;
+      const userData = await this.userInfo
+        .createQueryBuilder('user_entity')
+        .setQueryRunner(msQuery)
+        .where('user_entity.id = :id AND user_entity.email = :email', {
+          id,
+          email,
+        })
+        .getOne();
 
-      console.log(this.userInfo);
+      const allUser = await this.userInfo
+        .createQueryBuilder('user_entity')
+        .setQueryRunner(msQuery)
+        .getMany();
 
-      const userData = await this.userInfo.findOne({
-        where: {
-          id: data.id,
-          email: data.email,
-        },
-      });
+      // const x = await this.dataSource
+      //   .createQueryRunner(msQuery)
+      //   .getRepository('user_entity')
+      //   .findOne({
+      //     where: {
+      //       id: data.id,
+      //       email: data.email,
+      //     },
+      //   });
+      // console.log(x, allUser);
+      this.userInfo.findOne({});
 
       userProfile = userData;
 

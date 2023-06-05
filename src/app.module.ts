@@ -38,15 +38,41 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
         OAUTH_GOOGLE_REDIRECT: Joi.string().required(),
       }),
     }),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async () => ({
         type: 'postgres',
-        host: process.env.DB_HOST,
+        host: process.env.PGPOOL_HOST,
         port: +process.env.DB_PORT,
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
+        ssl: { rejectUnauthorized: false },
+        replication: {
+          master: {
+            host: process.env.DB_HOST,
+            port: +process.env.DB_PORT,
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+          },
+          slaves: [
+            {
+              host: process.env.DB_HOST,
+              port: +process.env.DB_PORT,
+              username: process.env.DB_USERNAME,
+              password: process.env.DB_PASSWORD,
+              database: process.env.DB_NAME,
+            },
+            {
+              username: process.env.DB_USERNAME,
+              host: process.env.DB_SLAVE_HOST,
+              port: +process.env.DB_SLAVE_PORT,
+              password: process.env.DB_PASSWORD,
+              database: process.env.DB_SLAVE_NAME,
+            },
+          ],
+        },
         entities: [UserEntity, ConferenceEntity, AgendaEntity],
         synchronize: true,
         logging: true,

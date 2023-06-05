@@ -21,7 +21,7 @@ export class SocketGuard implements CanActivate {
     }
   }
 
-  public canActivate(context: ExecutionContext | any): boolean {
+  public canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     let client = context.switchToWs().getClient();
     const accessToken = client.handshake.headers.cookie.split('CAV_ACC=')[1];
