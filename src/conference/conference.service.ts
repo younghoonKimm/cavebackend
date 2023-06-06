@@ -72,9 +72,8 @@ export class ConferenceService {
     try {
       const userConference = await this.userInfo
         .createQueryBuilder('user_entity')
+        .select(['user_entity.name'])
         .leftJoinAndSelect('user_entity.conferences', 'conferences')
-        .leftJoin('conferences.users', 'users')
-        .addSelect(['users.name', 'users.profileImg'])
         .where('user_entity.id = :id', {
           id,
         })

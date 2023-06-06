@@ -78,12 +78,10 @@ export class AuthService {
           email,
         })
         .select([
-          'user_entity.id',
           'user_entity.name',
           'user_entity.email',
           'user_entity.profileImg',
         ])
-
         .getOne();
 
       return isUser;
@@ -185,9 +183,6 @@ export class AuthService {
           email,
         })
         .getOne();
-
-      console.log(userData, 'ms');
-      // console.log(userData, 'sl');
 
       userProfile = userData;
 
