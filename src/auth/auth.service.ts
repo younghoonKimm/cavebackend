@@ -81,6 +81,7 @@ export class AuthService {
           'user_entity.name',
           'user_entity.email',
           'user_entity.profileImg',
+          'user_entity.id',
         ])
         .getOne();
 
@@ -163,7 +164,7 @@ export class AuthService {
     res: Response,
   ): Promise<AuthTokenOutput> {
     let userProfile: UserEntity | null;
-    const slaveQuery = this.dataSource.createQueryRunner('master');
+    const masterQuery = this.dataSource.createQueryRunner('master');
 
     try {
       const { data } = await this.jwtService.verify(
@@ -177,7 +178,7 @@ export class AuthService {
       const { id, email } = data;
       const userData = await this.userInfo
         .createQueryBuilder('user_entity')
-        .setQueryRunner(slaveQuery)
+        .setQueryRunner(masterQuery)
         .where('user_entity.id = :id AND user_entity.email = :email', {
           id,
           email,

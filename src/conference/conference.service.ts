@@ -35,10 +35,11 @@ export class ConferenceService {
   }
 
   async createConference(conference: ConferenceInput): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
+    const masterQuery = this.dataSource.createQueryRunner('master');
 
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await masterQuery.connect();
+    await masterQuery.startTransaction();
+
     const { users, agendas = [] } = conference;
     try {
       const invitedUsers = await this.authService.getAllUSer(users);
@@ -48,6 +49,10 @@ export class ConferenceService {
           this.agendaInfo.save(this.agendaInfo.create({ ...agenda })),
         ),
       );
+
+      if (!savedAgendas) {
+        throw new HttpException('아젠다 실패', 501);
+      }
 
       if (invitedUsers) {
         await this.conferenceInfo.save(
@@ -59,12 +64,13 @@ export class ConferenceService {
         );
       }
 
-      await queryRunner.commitTransaction();
+      await masterQuery.commitTransaction();
+      throw new HttpException('아젠다 실패', 501);
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await masterQuery.rollbackTransaction();
       throw new HttpException(error.errorMessage, error.status);
     } finally {
-      await queryRunner.release();
+      await masterQuery.release();
     }
   }
 
@@ -78,6 +84,16 @@ export class ConferenceService {
           id,
         })
         .getOne();
+
+      // const abc = await this.userInfo
+      //   .createQueryBuilder('user_entity')
+      //   .select(['user_entity.name'])
+      //   .leftJoinAndSelect('user_entity.conferences', 'conferences')
+      //   .leftJoin('conferences.users', 'users')
+      //   .where('user_entity.id = :id', {
+      //     id,
+      //   })
+      //   .getMany();
 
       return userConference;
     } catch (e) {
