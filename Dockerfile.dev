@@ -1,8 +1,4 @@
-FROM node:14
-
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y build-essential python libavcodec-dev libavformat-dev libavdevice-dev libssl-dev sudo
+FROM node:18-alpine
 
 WORKDIR /app
 

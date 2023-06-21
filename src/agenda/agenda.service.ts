@@ -37,15 +37,12 @@ export class AgendaService {
           title: '꿀잼쓰!',
         });
 
-        console.log(agenda);
-
         const conference = await this.conferenceInfo.findOne({
           where: { id: agenda.conference.id },
           relations: ['agendas'],
           select: ['id', 'agendas'],
         });
 
-        console.log(conference);
         this.eventsGateway.server
           .to(`/ws-${conference.id}`)
           .emit('messaged', conference.agendas);

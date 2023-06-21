@@ -57,6 +57,7 @@ export class AuthService {
 
   async createTokens(data: UserInputDto): Promise<AuthTokenOutput> {
     try {
+      console.log(data);
       const [accessToken, refreshToken] = await Promise.all([
         this.createAccesToken(data),
         this.createRefreshToken(data),
@@ -164,7 +165,6 @@ export class AuthService {
     res: Response,
   ): Promise<AuthTokenOutput> {
     let userProfile: UserEntity | null;
-    const masterQuery = this.dataSource.createQueryRunner('master');
 
     try {
       const { data } = await this.jwtService.verify(
@@ -178,7 +178,6 @@ export class AuthService {
       const { id, email } = data;
       const userData = await this.userInfo
         .createQueryBuilder('user_entity')
-        .setQueryRunner(masterQuery)
         .where('user_entity.id = :id AND user_entity.email = :email', {
           id,
           email,
@@ -195,6 +194,7 @@ export class AuthService {
           });
 
           this.setResToken(res, accessToken, oldRefreshToken);
+          console.log(accessToken, oldRefreshToken);
           return { accessToken, refreshToken: oldRefreshToken };
         }
       }

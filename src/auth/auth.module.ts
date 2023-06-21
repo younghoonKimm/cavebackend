@@ -5,7 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './GoogleStrategy';
 import { userProviders } from 'src/user/user.providers';
-import { DatabaseModule } from 'src/databse/database.module';
+import { DatabaseModule } from 'src/database/database.module';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 

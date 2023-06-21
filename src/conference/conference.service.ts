@@ -17,7 +17,6 @@ export class ConferenceService {
     private conferenceInfo: Repository<ConferenceEntity>,
     @Inject('AGENDA_REPOSITORY')
     private agendaInfo: Repository<AgendaEntity>,
-
     private readonly authService: AuthService,
     @Inject('DATASOURCE') private dataSource: DataSource,
   ) {}
@@ -51,7 +50,10 @@ export class ConferenceService {
       );
 
       if (!savedAgendas) {
-        throw new HttpException('아젠다 실패', 501);
+        throw new HttpException(
+          '아젠다 저장 실패',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
 
       if (invitedUsers) {
@@ -65,7 +67,6 @@ export class ConferenceService {
       }
 
       await masterQuery.commitTransaction();
-      throw new HttpException('아젠다 실패', 501);
     } catch (error) {
       await masterQuery.rollbackTransaction();
       throw new HttpException(error.errorMessage, error.status);
@@ -75,9 +76,12 @@ export class ConferenceService {
   }
 
   async getConferences({ id }: UserInputDto): Promise<UserEntity> {
+    const slaveQuery = this.dataSource.createQueryRunner('slave');
+
     try {
       const userConference = await this.userInfo
         .createQueryBuilder('user_entity')
+        .setQueryRunner(slaveQuery)
         .select(['user_entity.name'])
         .leftJoinAndSelect('user_entity.conferences', 'conferences')
         .where('user_entity.id = :id', {
@@ -85,20 +89,12 @@ export class ConferenceService {
         })
         .getOne();
 
-      // const abc = await this.userInfo
-      //   .createQueryBuilder('user_entity')
-      //   .select(['user_entity.name'])
-      //   .leftJoinAndSelect('user_entity.conferences', 'conferences')
-      //   .leftJoin('conferences.users', 'users')
-      //   .where('user_entity.id = :id', {
-      //     id,
-      //   })
-      //   .getMany();
-
       return userConference;
     } catch (e) {
       console.log(e);
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
+    } finally {
+      await slaveQuery.release();
     }
   }
 
@@ -106,9 +102,12 @@ export class ConferenceService {
     { id }: UserInputDto,
     conferenceId: string,
   ): Promise<ConferenceEntity> {
+    const slaveQuery = this.dataSource.createQueryRunner('slave');
+
     try {
-      const conference = await this.conferenceInfo
-        .createQueryBuilder('conference_entity')
+      const conference = await this.dataSource
+        .createQueryBuilder(ConferenceEntity, 'conference_entity')
+        .setQueryRunner(slaveQuery)
         .leftJoinAndSelect('conference_entity.users', 'users')
         .where('conference_entity.id = :conferenceId AND users.id = :id', {
           conferenceId,
@@ -126,6 +125,8 @@ export class ConferenceService {
     } catch (e) {
       console.log(e);
       throw new HttpException('nodata', HttpStatus.NOT_FOUND);
+    } finally {
+      await slaveQuery.release();
     }
   }
 
@@ -136,9 +137,13 @@ export class ConferenceService {
     // const { id } = user;
     const id = 'e9a1cf0b-952c-4b69-a58c-b8a9edd2fb57';
     const cid = '53dbdbdf-04e1-44ac-91d5-721b2c90fdc3';
+
+    const msQuery = this.dataSource.createQueryRunner('master');
+
     try {
       const oldConference = await this.conferenceInfo
         .createQueryBuilder('conference_entity')
+        .setQueryRunner(msQuery)
         .leftJoinAndSelect('conference_entity.users', 'users')
         .leftJoinAndSelect('conference_entity.agendas', 'agendas')
         .where('conference_entity.id = :cid AND users.id = :id', {
@@ -152,6 +157,8 @@ export class ConferenceService {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      await msQuery.release();
     }
   }
 
