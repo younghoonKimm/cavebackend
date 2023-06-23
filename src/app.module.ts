@@ -14,6 +14,7 @@ import { ConferenceEntity } from './conference/entities/conference.entity';
 import { AgendaModule } from './agenda/agenda.module';
 import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { CategoryEntitiy } from './category/entities/category.entities';
 
 @Module({
   imports: [
@@ -73,7 +74,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
             },
           ],
         },
-        entities: [UserEntity, ConferenceEntity, AgendaEntity],
+        entities: [UserEntity, ConferenceEntity, AgendaEntity, CategoryEntitiy],
         synchronize: true,
         logging: true,
       }),

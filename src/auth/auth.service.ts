@@ -57,7 +57,6 @@ export class AuthService {
 
   async createTokens(data: UserInputDto): Promise<AuthTokenOutput> {
     try {
-      console.log(data);
       const [accessToken, refreshToken] = await Promise.all([
         this.createAccesToken(data),
         this.createRefreshToken(data),
@@ -84,6 +83,7 @@ export class AuthService {
           'user_entity.profileImg',
           'user_entity.id',
         ])
+        .leftJoinAndSelect('user_entity.categories', 'categories')
         .getOne();
 
       return isUser;
@@ -101,6 +101,7 @@ export class AuthService {
 
     return isUser;
   }
+
   async logInUser(data: UserInputDto, res: Response): Promise<void> {
     try {
       const msQuery = this.dataSource.createQueryRunner('master');
@@ -114,7 +115,13 @@ export class AuthService {
           'user_entity.socialPlatform = :socialPlatform AND user_entity.email = :email',
           { socialPlatform, email },
         )
-        .select(['user_entity.id', 'user_entity.email'])
+        .select([
+          'user_entity.name',
+          'user_entity.email',
+          'user_entity.profileImg',
+          'user_entity.id',
+        ])
+        .leftJoinAndSelect('user_entity.categories', 'categories')
         .getOne();
 
       if (isUser) {
@@ -194,7 +201,7 @@ export class AuthService {
           });
 
           this.setResToken(res, accessToken, oldRefreshToken);
-          console.log(accessToken, oldRefreshToken);
+
           return { accessToken, refreshToken: oldRefreshToken };
         }
       }

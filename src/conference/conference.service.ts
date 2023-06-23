@@ -155,8 +155,8 @@ export class ConferenceService {
       if (oldConference) {
         this.conferenceInfo.save({ ...oldConference, title: '수정완료' });
       }
-    } catch (error) {
-      console.log(error);
+    } catch (e) {
+      console.log(e);
     } finally {
       await msQuery.release();
     }
@@ -179,8 +179,6 @@ export class ConferenceService {
 
       if (oldConference) {
         const res = await this.conferenceInfo.delete({ id: conferenceId });
-
-        console.log(res);
       }
     } catch (error) {}
   }
