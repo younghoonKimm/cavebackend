@@ -16,14 +16,17 @@ import { UserInputDto } from 'src/user/dto/user.dto';
 export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
-  @Post('/create')
+  @Post('/')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async createCategory(@Body() categoryInput: any): Promise<void> {
-    return await this.categoryService.createCategory(categoryInput);
+  async createCategory(
+    @Token() user: UserInputDto,
+    @Body() categoryInput: any,
+  ): Promise<void> {
+    return await this.categoryService.createCategory(user);
   }
 
-  @Get('/categories')
+  @Get('/')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
   async getConferences(@Token() user: UserInputDto): Promise<any> {

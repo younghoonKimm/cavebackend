@@ -14,7 +14,8 @@ import { ConferenceEntity } from './conference/entities/conference.entity';
 import { AgendaModule } from './agenda/agenda.module';
 import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { CategoryEntitiy } from './category/entities/category.entities';
+import { CategoryEntitiy } from './category/entities/category.entity';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { CategoryEntitiy } from './category/entities/category.entities';
     AuthModule,
     ConferenceModule,
     AgendaModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

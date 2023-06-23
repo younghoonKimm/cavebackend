@@ -34,10 +34,10 @@ export class ConferenceService {
   }
 
   async createConference(conference: ConferenceInput): Promise<void> {
-    const masterQuery = this.dataSource.createQueryRunner('master');
+    const msQuery = this.dataSource.createQueryRunner('master');
 
-    await masterQuery.connect();
-    await masterQuery.startTransaction();
+    await msQuery.connect();
+    await msQuery.startTransaction();
 
     const { users, agendas = [] } = conference;
     try {
@@ -66,12 +66,12 @@ export class ConferenceService {
         );
       }
 
-      await masterQuery.commitTransaction();
+      await msQuery.commitTransaction();
     } catch (error) {
-      await masterQuery.rollbackTransaction();
+      await msQuery.rollbackTransaction();
       throw new HttpException(error.errorMessage, error.status);
     } finally {
-      await masterQuery.release();
+      await msQuery.release();
     }
   }
 
