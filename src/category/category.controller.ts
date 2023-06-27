@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -29,7 +31,29 @@ export class CategoryController {
   @Get('/')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
-  async getConferences(@Token() user: UserInputDto): Promise<any> {
+  async getCategories(@Token() user: UserInputDto): Promise<any> {
     return await this.categoryService.getCategories(user);
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  // @UseGuards(AccessTokenGuard)
+  async getCategory(
+    @Token() user: UserInputDto,
+    @Param() { id: categoryId },
+  ): Promise<any> {
+    return await this.categoryService.getCategory(
+      '60fc95be-6094-4fbc-a8fb-cae05ee144c2',
+    );
+  }
+
+  @Patch('/:id')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AccessTokenGuard)
+  async updateCategory(
+    @Token() user: UserInputDto,
+    @Param() { id: categoryId },
+  ): Promise<any> {
+    return await this.categoryService.patchCategory(categoryId);
   }
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { IsNumber, IsString } from 'class-validator';
 import { UserEntity } from 'src/user/entities/user.entity';
@@ -14,7 +14,14 @@ export class CategoryEntitiy extends CommonEntitiy {
   @IsNumber()
   order: number;
 
-  @ManyToOne(() => ConferenceEntity)
+  @ManyToMany(() => ConferenceEntity, { cascade: true })
+  @JoinTable({
+    name: 'ConferenceCat',
+    joinColumn: {
+      name: 'ConfrenceId',
+      referencedColumnName: 'id',
+    },
+  })
   conferences: ConferenceEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.categories, {})
