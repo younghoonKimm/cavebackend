@@ -16,7 +16,6 @@ export class AccessTokenGuard implements CanActivate {
       const isTokenValid = this.jwtServie.verify(token.toString(), {
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       });
-
       return isTokenValid.data;
     } catch (error) {
       returnTokenError(error);

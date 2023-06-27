@@ -9,6 +9,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
+
   // const res = await startMediaSoup();
 
   // app.useWebSocketAdapter(new AbstractWsAdapter(app));

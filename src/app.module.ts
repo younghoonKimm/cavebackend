@@ -14,13 +14,15 @@ import { ConferenceEntity } from './conference/entities/conference.entity';
 import { AgendaModule } from './agenda/agenda.module';
 import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { CategoryEntitiy } from './category/entities/category.entity';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
-      // ignoreEnvFile: process.env.NODE_ENV === 'prod',
+
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod'),
         DB_HOST: Joi.string().required(),
@@ -73,7 +75,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
             },
           ],
         },
-        entities: [UserEntity, ConferenceEntity, AgendaEntity],
+        entities: [UserEntity, ConferenceEntity, AgendaEntity, CategoryEntitiy],
         synchronize: true,
         logging: true,
       }),
@@ -81,6 +83,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     AuthModule,
     ConferenceModule,
     AgendaModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

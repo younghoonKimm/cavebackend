@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { IsString } from 'class-validator';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';

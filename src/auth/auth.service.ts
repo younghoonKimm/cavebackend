@@ -83,6 +83,7 @@ export class AuthService {
           'user_entity.profileImg',
           'user_entity.id',
         ])
+        .leftJoinAndSelect('user_entity.categories', 'categories')
         .getOne();
 
       return isUser;
@@ -100,6 +101,7 @@ export class AuthService {
 
     return isUser;
   }
+
   async logInUser(data: UserInputDto, res: Response): Promise<void> {
     try {
       const msQuery = this.dataSource.createQueryRunner('master');
@@ -113,7 +115,13 @@ export class AuthService {
           'user_entity.socialPlatform = :socialPlatform AND user_entity.email = :email',
           { socialPlatform, email },
         )
-        .select(['user_entity.id', 'user_entity.email'])
+        .select([
+          'user_entity.name',
+          'user_entity.email',
+          'user_entity.profileImg',
+          'user_entity.id',
+        ])
+        .leftJoinAndSelect('user_entity.categories', 'categories')
         .getOne();
 
       if (isUser) {
@@ -164,7 +172,6 @@ export class AuthService {
     res: Response,
   ): Promise<AuthTokenOutput> {
     let userProfile: UserEntity | null;
-    const masterQuery = this.dataSource.createQueryRunner('master');
 
     try {
       const { data } = await this.jwtService.verify(
@@ -178,7 +185,6 @@ export class AuthService {
       const { id, email } = data;
       const userData = await this.userInfo
         .createQueryBuilder('user_entity')
-        .setQueryRunner(masterQuery)
         .where('user_entity.id = :id AND user_entity.email = :email', {
           id,
           email,
@@ -195,6 +201,7 @@ export class AuthService {
           });
 
           this.setResToken(res, accessToken, oldRefreshToken);
+
           return { accessToken, refreshToken: oldRefreshToken };
         }
       }

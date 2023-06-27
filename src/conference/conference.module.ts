@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { agendaProviders } from 'src/agenda/agenda.provider';
 import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { AuthService } from 'src/auth/auth.service';
-import { DatabaseModule } from 'src/databse/database.module';
+import { DatabaseModule } from 'src/database/database.module';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { userProviders } from 'src/user/user.providers';
 

@@ -1,7 +1,8 @@
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { IsString, IsNumber } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';
+import { CategoryEntitiy } from 'src/category/entities/category.entity';
 
 export enum SocialPlatforms {
   Google = 'google',
@@ -36,8 +37,15 @@ export class UserEntity extends CommonEntitiy {
   @IsNumber()
   darkMode?: 0 | 1;
 
-  @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {})
+  @ManyToMany(() => ConferenceEntity, (conference) => conference.users, {
+    onDelete: 'CASCADE',
+  })
   conferences: ConferenceEntity[];
+
+  @OneToMany(() => CategoryEntitiy, (category) => category.user, {
+    onDelete: 'CASCADE',
+  })
+  categories: CategoryEntitiy[];
 
   @Column({ nullable: true, length: 3000 })
   @IsString()

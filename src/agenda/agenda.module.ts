@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { conferenceProviders } from 'src/conference/conference.provider';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';
-import { DatabaseModule } from 'src/databse/database.module';
+import { DatabaseModule } from 'src/database/database.module';
 import { EventsGateway } from 'src/events/events.gateway';
 import { EventsModule } from 'src/events/events.module';
 
