@@ -1,9 +1,17 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { IsString, IsNumber } from 'class-validator';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { ConferenceEntity } from 'src/conference/entities/conference.entity';
 import { CategoryEntitiy } from 'src/category/entities/category.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { FriendsEntity } from 'src/friends/entities/friends.entitiy';
 
 export enum SocialPlatforms {
   Google = 'google',
@@ -62,6 +70,11 @@ export class UserEntity extends CommonEntitiy {
     onDelete: 'CASCADE',
   })
   categories: CategoryEntitiy[];
+
+  // @OneToOne(() => FriendsEntity, (friends) => friends.user, {
+  //   onDelete: 'CASCADE',
+  // })
+  // friends: FriendsEntity;
 
   @Column({ nullable: true, length: 3000 })
   @IsString()
