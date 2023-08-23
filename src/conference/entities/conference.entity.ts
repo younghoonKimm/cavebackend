@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
@@ -21,9 +22,15 @@ export enum ConferenceStatus {
 export class ConferenceEntity extends CommonEntitiy {
   @Column({ length: 30 })
   @IsString()
+  @ApiProperty({
+    example: 'title',
+  })
   title: string;
 
   @Column({ default: 'R' })
+  @ApiProperty({
+    example: 'P | R | S',
+  })
   @IsString()
   status: ConferenceStatus;
 
