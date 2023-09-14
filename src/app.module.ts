@@ -21,8 +21,7 @@ import { CategoryModule } from './category/category.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
-
+ 
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod'),
         DB_HOST: Joi.string().required(),
