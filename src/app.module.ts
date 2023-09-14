@@ -16,7 +16,7 @@ import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { CategoryEntitiy } from './category/entities/category.entity';
 import { CategoryModule } from './category/category.module';
-import { FreindsModule } from './freinds/freinds.module';
+// import { FreindsModule } from './freinds/freinds.module';
 
 @Module({
   imports: [
@@ -85,7 +85,7 @@ import { FreindsModule } from './freinds/freinds.module';
     AgendaModule,
     CategoryModule,
     EventsModule,
-    FreindsModule,
+    // FreindsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
