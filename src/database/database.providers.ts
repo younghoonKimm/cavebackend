@@ -6,6 +6,7 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'postgres',
+        logging: true,
         replication: {
           master: {
             host: process.env.PGPOOL_HOST,
@@ -14,11 +15,12 @@ export const databaseProviders = [
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
           },
+
           slaves: [
             {
-              host: process.env.DB_HOST,
-              port: +process.env.DB_PORT,
               username: process.env.DB_USERNAME,
+              host: process.env.DB_SLAVE_HOST,
+              port: +process.env.DB_SLAVE_PORT,
               password: process.env.DB_PASSWORD,
               database: process.env.DB_SLAVE_NAME,
             },

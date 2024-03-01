@@ -16,13 +16,16 @@ import { AgendaEntity } from './agenda/entities/agenda.entity';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { CategoryEntitiy } from './category/entities/category.entity';
 import { CategoryModule } from './category/category.module';
+import { DataSource } from 'typeorm';
 // import { FreindsModule } from './freinds/freinds.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
- 
+      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
+      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod'),
         DB_HOST: Joi.string().required(),
@@ -38,6 +41,10 @@ import { CategoryModule } from './category/category.module';
         OAUTH_GOOGLE_ID: Joi.string().required(),
         OAUTH_GOOGLE_SECRET: Joi.string().required(),
         OAUTH_GOOGLE_REDIRECT: Joi.string().required(),
+        DB_SLAVE_NAME: Joi.string().required(),
+        DB_SLAVE_USERNAME: Joi.string().required(),
+        DB_SLAVE_HOST: Joi.string().required(),
+        DB_SLAVE_PORT: Joi.string().required(),
       }),
     }),
 
@@ -45,27 +52,19 @@ import { CategoryModule } from './category/category.module';
       imports: [ConfigModule],
       useFactory: async () => ({
         type: 'postgres',
-        host: process.env.PGPOOL_HOST,
-        port: +process.env.DB_PORT,
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+        autoLoadEntities: true,
         ssl: { rejectUnauthorized: false },
+
         replication: {
           master: {
             host: process.env.DB_HOST,
             port: +process.env.DB_PORT,
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
           },
+
           slaves: [
-            {
-              host: process.env.DB_HOST,
-              port: +process.env.DB_PORT,
-              username: process.env.DB_USERNAME,
-              password: process.env.DB_PASSWORD,
-              database: process.env.DB_NAME,
-            },
             {
               username: process.env.DB_USERNAME,
               host: process.env.DB_SLAVE_HOST,
@@ -80,6 +79,7 @@ import { CategoryModule } from './category/category.module';
         logging: true,
       }),
     }),
+
     AuthModule,
     ConferenceModule,
     AgendaModule,

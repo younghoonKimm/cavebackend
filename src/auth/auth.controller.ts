@@ -4,6 +4,7 @@ import {
   Header,
   HttpCode,
   HttpStatus,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -65,17 +66,14 @@ export class AuthController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Get('/logout')
-  @Header('Cache-Control', 'none')
-  @HttpCode(HttpStatus.PERMANENT_REDIRECT)
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  // @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: '유저 로그아웃',
     description: '유저 로그아웃',
   })
-  async logOutUser(
-    @Res({ passthrough: true }) res,
-    @Token() user: UserInputDto,
-  ): Promise<void> {
+  async logOutUser(@Res() res, @Token() user: UserInputDto): Promise<any> {
     return await this.authService.logOutUser(res, user);
   }
 

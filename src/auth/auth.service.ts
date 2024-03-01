@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DataSource, Repository } from 'typeorm';
 
 import { UserInputDto } from 'src/user/dto/user.dto';
-import { UserEntity } from 'src/user/entities/user.entity';
+import { SocialPlatforms, UserEntity } from 'src/user/entities/user.entity';
 import { AuthTokenOutput, UserOutput } from './dto/auth.dto';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_JWT_EXPIRED } from 'src/common/constants/errorConstants';
@@ -135,20 +135,28 @@ export class AuthService {
       this.updateRefreshToken(user, refreshToken);
       this.setResToken(res, accessToken, refreshToken);
 
-      return res.redirect('/');
+      return res.redirect('http://localhost:3000');
     } catch (error) {
       this.clearResToken(res);
       throw new HttpException('FORBIDDEN', HttpStatus.FORBIDDEN);
     }
   }
 
-  async logOutUser(res, user: UserInputDto): Promise<void> {
-    res.clearCookie('CAV_ACC');
-    res.clearCookie('CAV_RFS');
+  async logOutUser(res, user: UserInputDto): Promise<any> {
+    // console.log(user);
+    try {
+      res.clearCookie('CAV_ACC');
+      res.clearCookie('CAV_RFS');
 
-    await this.userInfo.save(this.userInfo.create({ ...user, hashRT: null }));
+      const users = await this.userInfo.save(
+        this.userInfo.create({ ...user, hashRT: null }),
+      );
 
-    return res.redirect('/');
+      return users;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('BAD_REQUEST', HttpStatus.FORBIDDEN);
+    }
   }
 
   async updateRefreshToken(user: UserEntity, refreshToken: string) {
@@ -230,11 +238,18 @@ export class AuthService {
   }
 
   async AllgetUser() {
-    const users = await this.userInfo
-      .createQueryBuilder('user_entity')
-      .getMany();
-      // b3d82b2c-d144-4532-9518-d5d507bace9a",
-      // b59f4218-f567-4fbb-aa4a-17e8a29b394b
-    return users;
+    const data = {
+      email: 'sdfas',
+      name: 'sddsds',
+      socialPlatform: 'google' as SocialPlatforms,
+      profileImg: 'fadfasdf',
+    };
+    const user = await this.userInfo.save(this.userInfo.create({ ...data }));
+    // const users = await this.userInfo
+    //   .createQueryBuilder('user_entity')
+    //   .getMany();
+    // b3d82b2c-d144-4532-9518-d5d507bace9a",
+    // b59f4218-f567-4fbb-aa4a-17e8a29b394b
+    return user;
   }
 }
