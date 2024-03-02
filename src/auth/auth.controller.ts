@@ -66,14 +66,17 @@ export class AuthController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('/logout')
+  @Get('/logout')
   @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: '유저 로그아웃',
     description: '유저 로그아웃',
   })
-  async logOutUser(@Res() res, @Token() user: UserInputDto): Promise<any> {
+  async logOutUser(
+    @Res({ passthrough: true }) res,
+    @Token() user: UserInputDto,
+  ): Promise<void> {
     return await this.authService.logOutUser(res, user);
   }
 

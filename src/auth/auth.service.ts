@@ -142,19 +142,15 @@ export class AuthService {
     }
   }
 
-  async logOutUser(res, user: UserInputDto): Promise<any> {
-    // console.log(user);
+  async logOutUser(res, user: UserInputDto): Promise<void> {
     try {
       res.clearCookie('CAV_ACC');
       res.clearCookie('CAV_RFS');
 
-      const users = await this.userInfo.save(
-        this.userInfo.create({ ...user, hashRT: null }),
-      );
+      await this.userInfo.save(this.userInfo.create({ ...user, hashRT: null }));
 
-      return users;
+      new HttpException('OK', HttpStatus.OK);
     } catch (error) {
-      console.log(error);
       throw new HttpException('BAD_REQUEST', HttpStatus.FORBIDDEN);
     }
   }

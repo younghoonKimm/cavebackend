@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsDate, IsString } from 'class-validator';
 import { AgendaEntity } from 'src/agenda/entities/agenda.entity';
 import { CommonEntitiy } from 'src/common/entity/common.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
@@ -33,6 +33,35 @@ export class ConferenceEntity extends CommonEntitiy {
   })
   @IsString()
   status: ConferenceStatus;
+
+  @Column({ default: new Date() })
+  @IsString()
+  @ApiProperty({
+    example: '2024',
+  })
+  @IsString()
+  date: Date;
+
+  @Column({ length: 40, default: 'ds' })
+  @ApiProperty({
+    example: 'location',
+  })
+  @IsString()
+  location?: String;
+
+  @Column({ default: '60' })
+  @IsString()
+  @ApiProperty({
+    example: '60',
+  })
+  settingTime: string;
+
+  @Column({ default: '60' })
+  @IsString()
+  @ApiProperty({
+    example: '60',
+  })
+  remainTime: string;
 
   @ManyToMany(() => UserEntity, (user) => user.conferences, { cascade: true })
   @JoinTable({
