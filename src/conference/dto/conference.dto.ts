@@ -9,6 +9,7 @@ export interface ConferenceInput {
   status: ConferenceStatus;
   agendas: Partial<AgendaEntity>[];
   users: string[];
+  date?: Date;
 }
 
 export type ConferencesOutput = ConferenceEntity[];

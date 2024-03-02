@@ -18,13 +18,16 @@ import { UserInputDto } from 'src/user/dto/user.dto';
 export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
-  @Post('/')
+  @Post('/create')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessTokenGuard)
   async createCategory(
     @Token() user: UserInputDto,
     @Body() categoryInput: any,
   ): Promise<void> {
+    // 카테고리 이름, 인풋,
+    console.log(categoryInput);
+
     return await this.categoryService.createCategory(user);
   }
 
@@ -42,18 +45,17 @@ export class CategoryController {
     @Token() user: UserInputDto,
     @Param() { id: categoryId },
   ): Promise<any> {
-    return await this.categoryService.getCategory(
-      '60fc95be-6094-4fbc-a8fb-cae05ee144c2',
-    );
+    return await this.categoryService.getCategory(categoryId);
   }
 
   @Patch('/:id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AccessTokenGuard)
+  // @UseGuards(AccessTokenGuard)
   async updateCategory(
-    @Token() user: UserInputDto,
+    // @Token() user: UserInputDto,
     @Param() { id: categoryId },
+    @Body() categoryInput: any,
   ): Promise<any> {
-    return await this.categoryService.patchCategory(categoryId);
+    return await this.categoryService.patchCategory(categoryId, categoryInput);
   }
 }

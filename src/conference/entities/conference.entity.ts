@@ -34,7 +34,7 @@ export class ConferenceEntity extends CommonEntitiy {
   @IsString()
   status: ConferenceStatus;
 
-  @Column({ default: new Date() })
+  @Column()
   @IsString()
   @ApiProperty({
     example: '2024',

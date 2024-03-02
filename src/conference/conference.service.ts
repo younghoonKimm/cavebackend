@@ -39,7 +39,7 @@ export class ConferenceService {
     await msQuery.connect();
     await msQuery.startTransaction();
 
-    const { users, agendas = [] } = conference;
+    const { users, agendas = [], date } = conference;
     try {
       const invitedUsers = await this.authService.getAllUSer(users);
 
@@ -60,6 +60,7 @@ export class ConferenceService {
         await this.conferenceInfo.save(
           this.conferenceInfo.create({
             ...conference,
+            date: date ? date : new Date(),
             users: invitedUsers,
             agendas: savedAgendas,
           }),

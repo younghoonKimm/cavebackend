@@ -86,6 +86,7 @@ export class CategoryService {
 
     await msQuery.connect();
     await msQuery.startTransaction();
+
     try {
       const user = await this.userInfo
         .createQueryBuilder('user_entity')
@@ -94,8 +95,6 @@ export class CategoryService {
           id,
         })
         .getOne();
-
-      //   console.log(user);
 
       //   const conf = await this.conferenceInfo
       //     .createQueryBuilder('conference_entity')
@@ -127,7 +126,7 @@ export class CategoryService {
     const slaveQuery = this.dataSource.createQueryRunner('slave');
   }
 
-  async patchCategory(id: string): Promise<any> {
+  async patchCategory(id: string, categoryInput: any): Promise<any> {
     const msQuery = this.dataSource.createQueryRunner('master');
 
     try {
@@ -135,23 +134,26 @@ export class CategoryService {
         .createQueryBuilder('category_entity')
         .setQueryRunner(msQuery)
         .where('category_entity.id = :id', {
-          id: '60fc95be-6094-4fbc-a8fb-cae05ee144c2',
+          id,
         })
         .leftJoinAndSelect('category_entity.conferences', 'conferences')
         .getOne();
 
-      const conf = await this.conferenceInfo
+      const conferences = await this.conferenceInfo
         .createQueryBuilder('conference_entity')
         .setQueryRunner(msQuery)
-        .where('conference_entity.id = :id', {
-          id: '32ca7c78-0e92-4029-b224-13e0c402ba39',
+        .where('conference_entity.id IN (:...id)', {
+          id: categoryInput.conferences,
         })
-        .getOne();
+        .getMany();
       // const conf = await.conf32ca7c78-0e92-4029-b224-13e0c402ba39
-      console.log(conf, category);
-      await this.categoryInfo.save({ ...category, conferences: [] });
 
-      return category;
+      const res = await this.categoryInfo.save({
+        ...category,
+        conferences: conferences,
+      });
+
+      return res;
     } catch (e) {
       console.log(e);
       throw new HttpException('nodata', HttpStatus.INTERNAL_SERVER_ERROR);

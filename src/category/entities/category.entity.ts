@@ -31,6 +31,7 @@ export class CategoryEntitiy extends CommonEntitiy {
       name: 'ConfrenceId',
       referencedColumnName: 'id',
     },
+    inverseJoinColumn: { name: 'CatId', referencedColumnName: 'id' },
   })
   conferences: ConferenceEntity[];
 
